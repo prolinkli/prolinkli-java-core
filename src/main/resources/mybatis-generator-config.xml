@@ -6,6 +6,10 @@
 <generatorConfiguration>
   <context id="ProlinkliContext" targetRuntime="MyBatis3">
 
+
+		<!-- Plugins -->
+		<plugin type="com.prolinkli.framework.db.plugin.DbExamplePlugin"/>
+
 		<jdbcConnection driverClass="${jdbc.driverClass}"
 										connectionURL="${jdbc.url}"
 										userId="${jdbc.userId}"
@@ -25,6 +29,7 @@
     										 targetPackage="com.prolinkli.core.app.db.mapper.generated"
                          targetProject="src/main/java"
                          />
+
 
     <!-- Example: generate for a table called 'users' -->
     <table tableName="build_info"

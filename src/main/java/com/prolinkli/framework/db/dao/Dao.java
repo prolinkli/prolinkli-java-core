@@ -2,6 +2,8 @@ package com.prolinkli.framework.db.dao;
 
 import java.util.List;
 
+import com.prolinkli.framework.db.base.DbModel;
+
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -10,7 +12,7 @@ import org.slf4j.LoggerFactory;
 /**
  * GenericDao
  */
-public class Dao<T, PK> implements IParentDao<T, PK> {
+public class Dao<T extends DbModel, PK> implements IParentDao<T, PK> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Dao.class);
 	private static final String NAMESPACE = "mappers";
@@ -68,6 +70,18 @@ public class Dao<T, PK> implements IParentDao<T, PK> {
 
 	@Override
 	public int update(T entity) throws PersistenceException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int delete(List<T> entities) throws PersistenceException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int update(List<T> entities) throws PersistenceException {
 		// TODO Auto-generated method stub
 		return 0;
 	}

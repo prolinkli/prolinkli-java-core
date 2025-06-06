@@ -43,9 +43,15 @@
 			<artifactId>spring-boot-devtools</artifactId>
 			<optional>true</optional>
     </dependency>
+
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mybatis.generator</groupId>
+			<artifactId>mybatis-generator-core</artifactId>
+			<version>1.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mybatis.spring.boot</groupId>
@@ -78,20 +84,45 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.mybatis.generator</groupId>
 				<artifactId>mybatis-generator-maven-plugin</artifactId>
 				<version>1.4.1</version> <!-- Use latest version -->
-					<dependencies>
-						<dependency>
-							<groupId>org.postgresql</groupId>
-							<artifactId>postgresql</artifactId>
-							<version>42.6.0</version> <!-- or latest -->
-						</dependency>
-					</dependencies>
-					<configuration>
+				<dependencies>
+					<dependency>
+						<groupId>com.github.dcendents</groupId>
+						<artifactId>mybatis-generator-plugins</artifactId>
+						<version>1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.postgresql</groupId>
+						<artifactId>postgresql</artifactId>
+						<version>42.6.0</version> <!-- or latest -->
+					</dependency>
+					<dependency>
+						<groupId>${project.groupId}</groupId>
+						<artifactId>${project.artifactId}</artifactId>
+						<version>${project.version}</version>
+						<classifier>original</classifier>
+					</dependency>
+				</dependencies>
+				<configuration>
 					<verbose>true</verbose>
 					<overwrite>true</overwrite>
 					<configurationFile>src/main/resources/mybatis-generator-config.xml</configurationFile>
+					<includeCompileDependencies>true</includeCompileDependencies>
+					<includeAllDependencies>false</includeAllDependencies>
 					<properties>
 						<property>
 							<name>jdbc.driverClass</name>
@@ -110,18 +141,6 @@
 							<value>${db.password}</value>
 						</property>
 					</properties>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<annotationProcessorPaths>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</path>
-					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 			<plugin>
