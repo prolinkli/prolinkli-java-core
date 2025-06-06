@@ -1,18 +1,20 @@
 package com.prolinkli.core.app.components.buildinfo.controllers;
 
+import java.util.Map;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * BuildInfoController
  */
-@RestController()
-@RequestMapping("buildinfo")
+@RestController
+@RequestMapping(path = "buildinfo")
 public class BuildInfoController {
 
-	@RequestMapping("info")
-	public String getBuildInfo() {
-		return "Prolinkli Build Info: Version 1.0.0, Build Date: 2025-06-05";
+	@GetMapping("/info")
+	public Map<String, String> getBuildInfo() {
+		return Map.of("name", "Prolinkli", "version", "1.0.0", "buildDate", "2025-06-06");
 	}
 
 }

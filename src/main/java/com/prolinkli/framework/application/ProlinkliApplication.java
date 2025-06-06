@@ -1,4 +1,4 @@
-package com.prolinkli.framework;
+package com.prolinkli.framework.application;
 
 import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * ProlinkliApplication
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.prolinkli")
 public class ProlinkliApplication {
 
 	private final static Logger LOGGER =
