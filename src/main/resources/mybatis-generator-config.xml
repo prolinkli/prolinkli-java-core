@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration
+  PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+  "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+  <context id="ProlinkliContext" targetRuntime="MyBatis3">
+
+		<jdbcConnection driverClass="${jdbc.driverClass}"
+										connectionURL="${jdbc.url}"
+										userId="${jdbc.userId}"
+										password="${jdbc.password}" />
+
+    <javaModelGenerator targetPackage="com.prolinkli.core.app.db.model.generated"
+												targetProject="src/main/java"
+                         />
+
+    <sqlMapGenerator targetPackage="mapper"
+                     targetProject="src/main/resources"
+                      />
+
+    <javaClientGenerator type="XMLMAPPER"
+    										 targetPackage="com.prolinkli.core.app.db.mapper.generated"
+                         targetProject="src/main/java"
+                         />
+
+    <!-- Example: generate for a table called 'users' -->
+    <table tableName="build_info"
+           schema="public"
+           domainObjectName="BuildInfoDb" />
+           
+    <!-- Add more <table> entries here as needed -->
+
+  </context>
+</generatorConfiguration>

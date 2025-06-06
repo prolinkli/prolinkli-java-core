@@ -28,6 +28,10 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
+		<db.driver>org.postgresql.Driver</db.driver>
+		<db.url>jdbc:postgresql://localhost:6543/postgres</db.url>
+		<db.username>postgres</db.username>
+		<db.password>docker</db.password>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -43,7 +47,6 @@
 			<artifactId>mybatis-spring-boot-starter</artifactId>
 			<version>3.0.4</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -69,6 +72,41 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.mybatis.generator</groupId>
+				<artifactId>mybatis-generator-maven-plugin</artifactId>
+				<version>1.4.1</version> <!-- Use latest version -->
+					<dependencies>
+						<dependency>
+							<groupId>org.postgresql</groupId>
+							<artifactId>postgresql</artifactId>
+							<version>42.6.0</version> <!-- or latest -->
+						</dependency>
+					</dependencies>
+					<configuration>
+					<verbose>true</verbose>
+					<overwrite>true</overwrite>
+					<configurationFile>src/main/resources/mybatis-generator-config.xml</configurationFile>
+					<properties>
+						<property>
+							<name>jdbc.driverClass</name>
+							<value>${db.driver}</value>
+						</property>
+						<property>
+							<name>jdbc.url</name>
+							<value>${db.url}</value>
+						</property>
+						<property>
+							<name>jdbc.userId</name>
+							<value>${db.username}</value>
+						</property>
+						<property>
+							<name>jdbc.password</name>
+							<value>${db.password}</value>
+						</property>
+					</properties>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
