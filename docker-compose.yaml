@@ -1,0 +1,23 @@
+version: '3.9'
+
+services:
+  prolinkli_postgres:
+    container_name: prolinkli_core_db
+    image: postgres:latest
+    restart: always
+    tty: true
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: prolinkli
+    volumes:
+      - prolinkli_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  prolinkli_pgdata:

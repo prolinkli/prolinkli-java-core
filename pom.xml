@@ -42,6 +42,21 @@
 			<version>5.10.0</version>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- Lombok for reducing boilerplate code -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.28</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- MyBatis -->
+		<dependency>
+				<groupId>org.liquibase</groupId>
+				<artifactId>liquibase-core</artifactId>
+		</dependency>
+
   </dependencies>
 
   <build>
