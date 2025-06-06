@@ -13,7 +13,9 @@
 
     <javaModelGenerator targetPackage="com.prolinkli.core.app.db.model.generated"
 												targetProject="src/main/java"
-                         />
+                        >
+			<property name="rootClass" value="com.prolinkli.framework.db.base.DbModel"/>
+		</javaModelGenerator>
 
     <sqlMapGenerator targetPackage="mapper"
                      targetProject="src/main/resources"
