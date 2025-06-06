@@ -1,0 +1,172 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# JavaDoc Generation Guidelines
+
+## Overview
+This document provides comprehensive guidelines for generating high-quality JavaDoc comments for the Equitable MyTime API codebase. This Spring Boot RESTful web service uses MyBatis, Lombok, and custom internal frameworks.
+
+## Core Principles
+- **Clarity First**: Write comments that explain the "why" and "what", not just the "how"
+- **Context Aware**: Consider the Spring Boot, MyBatis, and internal framework context
+- **User-Focused**: Write for developers who may be unfamiliar with the codebase
+- **Actionable**: Provide concrete examples and usage patterns
+- **Consistent**: Follow established patterns and terminology
+
+## What to Document
+
+### Always Document
+- Public classes, interfaces, and enums
+- Public and protected methods
+- Complex private methods that contain business logic
+- Custom annotations
+- Configuration classes
+- DTO/Entity classes with field descriptions
+- Exception classes
+- Utility classes and helper methods
+
+### Skip Documentation For
+- Simple getters/setters (Lombok handles these)
+- Obvious constructors
+- Methods that already have comprehensive JavaDoc
+- Overridden methods where parent documentation is sufficient
+
+## Documentation Standards
+
+### Class-Level Documentation
+```java
+/**
+ * Brief one-line description of the class purpose.
+ *
+ * <p>Detailed description explaining:
+ * - What the class does and why it exists
+ * - Its role in the application architecture
+ * - Key responsibilities and boundaries
+ * - Integration points with other components
+ *
+ * <p><strong>Usage Example:</strong>
+ * <pre>{@code
+ * // Provide a realistic usage example
+ * ServiceClass service = new ServiceClass();
+ * Result result = service.performAction(parameters);
+ * }</pre>
+ *
+ * <p><strong>Framework Integration:</strong>
+ * - Spring annotations and their purposes
+ * - MyBatis mapper relationships
+ * - Internal framework usage (DAO, AbstractProvider, etc.)
+ *
+ * @author Generated Documentation
+ * @since 1.0
+ * @see RelatedClass
+ * @see RelatedInterface
+ */
+```
+
+### Method-Level Documentation
+```java
+/**
+ * Brief description of what the method accomplishes.
+ *
+ * <p>Detailed explanation including:
+ * - Business logic purpose and context
+ * - Input validation and constraints
+ * - Processing steps (high-level)
+ * - Side effects or state changes
+ *
+ * <p><strong>Use Cases:</strong>
+ * <ul>
+ * <li>Primary use case with context</li>
+ * <li>Alternative scenarios</li>
+ * <li>Edge cases handled</li>
+ * </ul>
+ *
+ * <p><strong>Example:</strong>
+ * <pre>{@code
+ * // Show realistic usage with actual parameters
+ * List<Employee> employees = service.findEmployeesByDepartment("Engineering", true);
+ * }</pre>
+ *
+ * @param paramName description with constraints, validation rules, and examples
+ * @param anotherParam description including null-safety and range information
+ * @return description of return value, including possible null conditions
+ * @throws SpecificException when this specific condition occurs
+ * @throws AnotherException under these circumstances
+ * @see #relatedMethod(String)
+ * @see RelatedClass#relevantMethod()
+ */
+```
+
+## Framework-Specific Guidelines
+
+### Spring Boot Components
+- **Controllers**: Document REST endpoints, HTTP methods, request/response formats
+- **Services**: Explain business logic, transaction boundaries, validation rules
+- **Repositories**: Document query purposes, performance considerations
+- **Configuration**: Explain configuration purposes and dependencies
+
+### MyBatis Integration
+- **Mappers**: Document SQL operation purposes and parameter mappings
+- **ResultMaps**: Explain object mapping strategies
+- **Dynamic SQL**: Document conditional logic and use cases
+
+### Internal Frameworks
+- **DAO Classes**: Document data access patterns and entity relationships
+- **AbstractProvider**: Explain inheritance patterns and extension points
+- **Custom Annotations**: Document annotation purposes and usage patterns
+
+## Lombok Considerations
+- Document fields that Lombok will generate accessors for
+- Explain custom validation annotations
+- Document builder patterns and their intended usage
+- Avoid documenting simple getters/setters that Lombok generates
+
+## Quality Checklist
+- [ ] Class purpose is clear and contextual
+- [ ] Method responsibilities are well-defined
+- [ ] Parameters include validation rules and constraints
+- [ ] Return values and exceptions are documented
+- [ ] Examples are realistic and helpful
+- [ ] Framework integrations are explained
+- [ ] Related classes/methods are cross-referenced
+- [ ] Business context is provided where relevant
+
+## Output Format
+When generating JavaDoc:
+1. **Only return the JavaDoc comments and method signatures**
+2. **Do not include method implementations or logic**
+3. **Focus on elements lacking comprehensive documentation**
+4. **Use proper JavaDoc HTML tags and formatting**
+5. **Include realistic code examples in @code blocks**
+
+## Example Response Format
+```java
+/**
+ * Validates PTO requests against company policies and employee balances.
+ * 
+ * <p>This validator performs comprehensive checks including:
+ * - Available PTO balance verification
+ * - Holiday conflict detection
+ * - Business rule compliance
+ * - Schedule integration validation
+ *
+ * <p><strong>Use Cases:</strong>
+ * <ul>
+ * <li>Pre-submission validation in the UI</li>
+ * <li>Server-side validation during PTO request processing</li>
+ * <li>Batch validation for imported PTO data</li>
+ * </ul>
+ *
+ * @param request the PTO request to validate, must not be null
+ * @param context validation context including employee and date information
+ * @return validation result with detailed error messages if validation fails
+ * @throws ValidationException if the request data is malformed
+ * @see PTORequest
+ * @see ValidationContext
+ */
+public ValidationResult validatePTORequest(PTORequest request, ValidationContext context) throws ValidationException;
+```
+
+Remember: Focus on providing value to future developers by explaining the business context, integration points, and practical usage patterns rather than just restating what the code obviously does.

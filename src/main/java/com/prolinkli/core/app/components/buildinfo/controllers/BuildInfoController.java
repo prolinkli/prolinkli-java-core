@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "buildinfo")
 public class BuildInfoController {
 
-	@GetMapping("/")
+	@GetMapping("")
 	public Map<String, String> getBuildInfo() {
 		return Map.of("name", "Prolinkli", "version", "1.0.0", "buildDate", "2025-06-06");
 	}
