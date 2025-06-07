@@ -4,7 +4,7 @@ about: Provide a concise, one or two-sentence summary of what this Epic aims to 
   This should be easily understood by both technical and non-technical audiences.
 title: "[Epic]"
 labels: epic
-assignees: Identityofsine
+assignees: ''
 
 ---
 
