@@ -2,6 +2,7 @@ package com.prolinkli.framework.db.dao;
 
 import java.util.List;
 
+import com.prolinkli.framework.db.base.DbExample;
 import com.prolinkli.framework.db.base.DbModel;
 
 import org.apache.ibatis.exceptions.PersistenceException;
@@ -13,7 +14,7 @@ public interface IParentDao<T extends DbModel, PK> {
 
 	public T selectById(PK id) throws PersistenceException;
 
-	public <R> T select(R example) throws PersistenceException;
+	public <R extends DbExample<T>> List<T> select(R example) throws PersistenceException;
 
 	public int insert(T entity) throws PersistenceException;
 

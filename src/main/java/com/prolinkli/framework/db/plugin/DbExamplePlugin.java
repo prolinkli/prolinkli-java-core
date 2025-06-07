@@ -15,7 +15,10 @@ public class DbExamplePlugin extends PluginAdapter {
 	@Override
 	public boolean modelExampleClassGenerated(TopLevelClass topLevelClass,
 			IntrospectedTable introspectedTable) {
-		topLevelClass.setSuperClass(new FullyQualifiedJavaType("com.prolinkli.framework.db.base.DbExample"));
+		String modelName = introspectedTable.getBaseRecordType();
+		FullyQualifiedJavaType superClass = new FullyQualifiedJavaType(
+				"com.prolinkli.framework.db.base.DbExample<" + modelName + ">");
+		topLevelClass.setSuperClass(superClass);
 		return true;
 	}
 

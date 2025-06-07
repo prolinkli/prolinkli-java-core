@@ -22,7 +22,7 @@
 		</javaModelGenerator>
 
     <sqlMapGenerator targetPackage="mapper"
-                     targetProject="src/main/resources"
+										 targetProject="src/main/resources/generated"
                       />
 
     <javaClientGenerator type="XMLMAPPER"
