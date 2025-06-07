@@ -10,6 +10,7 @@ import com.prolinkli.core.app.db.model.generated.BuildInfoDbExample;
 import com.prolinkli.core.app.db.model.generated.BuildInfoDbKey;
 import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
+import com.prolinkli.framework.util.LocalDateUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,14 +46,19 @@ public class BuildInfoGetService {
 	 * consumers.
 	 * </p>
 	 *
+	 * instance
+	 * 
 	 * @return a {@link com.prolinkli.core.app.components.buildinfo.model.BuildInfo}
-	 *         instance
 	 *         containing build name, version, and date
 	 */
 	public BuildInfo getBuildInfo() {
 
 		BuildInfoDbExample example = new BuildInfoDbExample();
 		example.setOrderByClause("build_date DESC");
+		example.createCriteria()
+				.andCreatedAtIsNotNull()
+				.andBuildDateIsNotNull();
+
 		BuildInfoDb db = dao.select(example).stream()
 				.findFirst()
 				.orElseThrow(() -> new RuntimeException("No build info found in the database"));
@@ -60,7 +66,9 @@ public class BuildInfoGetService {
 		BuildInfo buildInfo = new BuildInfo();
 		buildInfo.setBuildName(db.getEnvironment());
 		buildInfo.setBuildVersion(db.getVersion());
-		buildInfo.setBuildDate(LocalDate.ofInstant(db.getBuildDate().toInstant(), ZoneId.systemDefault()));
+		buildInfo.setCommitHash(db.getCommitHash());
+		buildInfo.setBuildDate(LocalDateUtil.toLocalDate(db.getBuildDate()));
+
 		return buildInfo;
 	}
 

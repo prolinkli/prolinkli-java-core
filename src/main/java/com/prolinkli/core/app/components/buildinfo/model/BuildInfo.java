@@ -44,6 +44,18 @@ public class BuildInfo {
 	private String buildVersion;
 
 	/**
+	 * The commit hash associated with the build.
+	 * 
+	 * <p>
+	 * This is a unique identifier for the specific commit in the
+	 * version control system (e.g., Git) that corresponds to this build.
+	 * It allows developers to trace back to the exact code state that was
+	 * used to create the build.
+	 * </p>
+	 */
+	private String commitHash;
+
+	/**
 	 * The date when the build was created.
 	 * 
 	 * <p>

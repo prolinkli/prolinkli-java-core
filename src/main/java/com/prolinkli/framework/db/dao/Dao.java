@@ -44,15 +44,7 @@ public class Dao<T extends DbModel, PK> implements IParentDao<T, PK> {
 		public static final String DELETE_BY_PRIMARY_KEY_METHOD = "deleteByPrimaryKey";
 	}
 
-	private final static class MethodReturnTypes {
-		public static final Class<?> SELECT_BY_EXAMPLE_RETURN_TYPE = List.class;
-		public static final Class<?> INSERT_RETURN_TYPE = Integer.class;
-		public static final Class<?> UPDATE_RETURN_TYPE = Integer.class;
-		public static final Class<?> DELETE_RETURN_TYPE = Integer.class;
-	}
-
 	private final Class<T> entityType;
-	private final String mapperNamespace;
 	private final Object mapper;
 
 	/**
@@ -64,15 +56,7 @@ public class Dao<T extends DbModel, PK> implements IParentDao<T, PK> {
 	 */
 	public Dao(Object mapper, Class<T> entityType, Class<?> mapperClass) {
 		this.mapper = mapper;
-		this.mapperNamespace = mapperClass.getPackageName() + "." + mapperClass.getSimpleName();
 		this.entityType = entityType;
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public T selectById(PK id) throws PersistenceException {
-
-		return null;
 	}
 
 	/**
@@ -85,21 +69,50 @@ public class Dao<T extends DbModel, PK> implements IParentDao<T, PK> {
 	}
 
 	@Override
-	public int delete(T entity) throws PersistenceException {
-		// TODO Auto-generated method stub
-		return 0;
+	public <R extends DbExample<T>> int delete(R example) throws PersistenceException {
+
+		Method deleteMethod = getMapperMethod(MethodNames.DELETE_BY_EXAMPLE_METHOD, example.getClass());
+		if (deleteMethod == null) {
+			LOGGER.error("Mapper method not found: {}", MethodNames.DELETE_BY_EXAMPLE_METHOD);
+			return 0; // Handle method not found appropriately
+		}
+
+		Integer result = invokeMethod(deleteMethod, example);
+		if (result == null) {
+			LOGGER.error("Delete method returned null for example: {}", example);
+			return 0; // Handle null result appropriately
+		}
+
+		if (result instanceof Integer) {
+			return result.intValue();
+		} else {
+			LOGGER.error("Delete method did not return an Integer: {}", result);
+			return 0; // Handle unexpected return type
+		}
+
 	}
 
 	@Override
-	public int delete(List<T> entities) throws PersistenceException {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+	public int delete(PK id) throws PersistenceException {
+		Method deleteMethod = getMapperMethod(MethodNames.DELETE_BY_PRIMARY_KEY_METHOD, entityType);
+		if (deleteMethod == null) {
+			LOGGER.error("Mapper method not found: {}", MethodNames.DELETE_BY_PRIMARY_KEY_METHOD);
+			return 0; // Handle method not found appropriately
+		}
 
-	@Override
-	public int deleteById(PK id) throws PersistenceException {
-		// TODO Auto-generated method stub
-		return 0;
+		Integer result = invokeMethod(deleteMethod, id);
+		if (result == null) {
+			LOGGER.error("Delete method returned null for id: {}", id);
+			return 0; // Handle null result appropriately
+		}
+
+		if (result instanceof Integer) {
+			return result.intValue();
+		} else {
+			LOGGER.error("Delete method did not return an Integer: {}", result);
+			return 0; // Handle unexpected return type
+		}
+
 	}
 
 	@Override
@@ -122,8 +135,45 @@ public class Dao<T extends DbModel, PK> implements IParentDao<T, PK> {
 
 	@Override
 	public int insert(List<T> entities) throws PersistenceException {
-		// TODO Auto-generated method stub
-		return 0;
+
+		if (entities == null || entities.isEmpty()) {
+			return 0; // Handle empty list appropriately
+		}
+
+		return (int) entities.stream().reduce(0, (count, entity) -> {
+			try {
+				return count + insert(entity);
+			} catch (PersistenceException e) {
+				LOGGER.error("Error inserting entity: {}", entity, e);
+				return count; // Return the current count if insertion fails
+			}
+		}, Integer::sum);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public T select(PK id) throws PersistenceException {
+
+		Method selectMethod = getMapperMethod(MethodNames.SELECT_BY_PRIMARY_KEY_METHOD, entityType);
+
+		if (selectMethod == null) {
+			LOGGER.error("Mapper method not found: {}", MethodNames.SELECT_BY_PRIMARY_KEY_METHOD);
+			return null; // Handle method not found appropriately
+		}
+
+		Object result = invokeMethod(selectMethod, id);
+		if (result == null) {
+			LOGGER.warn("Select method returned null for id: {}", id);
+			return null; // Handle null result appropriately
+		}
+
+		if (result instanceof DbModel) {
+			return (T) result; // Cast to the entity type
+		} else {
+			LOGGER.error("Select method did not return an instance of DbModel: {}", result);
+			return null; // Handle unexpected return type
+		}
+
 	}
 
 	@Override
@@ -138,16 +188,55 @@ public class Dao<T extends DbModel, PK> implements IParentDao<T, PK> {
 
 	}
 
+	public <R extends DbExample<T>> int update(T entity, R example) throws PersistenceException {
+		Method updateMethod = getMapperMethod(MethodNames.UPDATE_BY_EXAMPLE_METHOD, entity.getClass(), example.getClass());
+		if (updateMethod == null) {
+			LOGGER.error("Mapper method not found: {}", MethodNames.UPDATE_BY_EXAMPLE_METHOD);
+			return 0; // Handle method not found appropriately
+		}
+		Integer result = invokeMethod(updateMethod, entity, example);
+		if (result == null) {
+			LOGGER.error("Update method returned null for entity: {}, example: {}", entity, example);
+			return 0; // Handle null result appropriately
+		}
+		if (result instanceof Integer) {
+			return result.intValue();
+		} else {
+			LOGGER.error("Update method did not return an Integer: {}", result);
+			return 0; // Handle unexpected return type
+		}
+	}
+
 	@Override
 	public int update(T entity) throws PersistenceException {
-		// TODO Auto-generated method stub
-		return 0;
+		Method updateMethod = getMapperMethod(MethodNames.UPDATE_BY_PRIMARY_KEY_METHOD, entity.getClass());
+		if (updateMethod == null) {
+			LOGGER.error("Mapper method not found: {}", MethodNames.UPDATE_BY_PRIMARY_KEY_METHOD);
+			return 0; // Handle method not found appropriately
+		}
+		Integer result = invokeMethod(updateMethod, entity);
+		if (result == null) {
+			LOGGER.error("Update method returned null for entity: {}", entity);
+			return 0; // Handle null result appropriately
+		}
+		if (result instanceof Integer) {
+			return result.intValue();
+		} else {
+			LOGGER.error("Update method did not return an Integer: {}", result);
+			return 0; // Handle unexpected return type
+		}
 	}
 
 	@Override
 	public int update(List<T> entities) throws PersistenceException {
-		// TODO Auto-generated method stub
-		return 0;
+		return (entities != null) ? entities.stream().reduce(0, (count, entity) -> {
+			try {
+				return count + update(entity);
+			} catch (PersistenceException e) {
+				LOGGER.error("Error updating entity: {}", entity, e);
+				return count; // Return the current count if update fails
+			}
+		}, Integer::sum) : 0;
 	}
 
 	@SuppressWarnings("unchecked")

@@ -1,12 +1,12 @@
 package com.prolinkli.core.app.components.buildinfo.controller;
 
-import java.util.Map;
-
 import com.prolinkli.core.app.components.buildinfo.model.BuildInfo;
 import com.prolinkli.core.app.components.buildinfo.service.BuildInfoGetService;
+import com.prolinkli.core.app.components.buildinfo.service.BuildInfoSetService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,9 +21,23 @@ public class BuildInfoController {
 	@Autowired
 	private BuildInfoGetService buildInfoGetService;
 
+	@Autowired
+	private BuildInfoSetService buildInfoSetService;
+
 	@GetMapping("")
 	public BuildInfo getBuildInfo() {
 		return buildInfoGetService.getBuildInfo();
+	}
+
+	@PostMapping("")
+	public Boolean insertCurrentBuildInfo() {
+		try {
+			buildInfoSetService.insertCurrentBuildInfo();
+			return true;
+		} catch (Exception e) {
+			// Log the exception (not shown here for brevity)
+			return false;
+		}
 	}
 
 }
