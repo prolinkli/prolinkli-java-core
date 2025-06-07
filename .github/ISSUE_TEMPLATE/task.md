@@ -2,7 +2,7 @@
 name: Task
 about: Breaking down things into tasks
 title: "[TASK]"
-labels: ''
+labels: task
 assignees: ''
 
 ---
