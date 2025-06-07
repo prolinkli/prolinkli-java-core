@@ -13,7 +13,8 @@ Labels: user-story, [feature-area], [sprint-number]
 # User Story
 
 As a [type of user], I want to [perform some action] so that I can [achieve some goal].
-Acceptance Criteria
+
+# Acceptance Criteria
 
 (This is a checklist of specific, testable conditions that must be met for this story to be considered complete. Each criterion should be a "Yes/No" or "Pass/Fail" statement from a user's perspective.)
 
