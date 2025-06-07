@@ -2,7 +2,7 @@
 name: Epic
 about: Provide a concise, one or two-sentence summary of what this Epic aims to achieve.
   This should be easily understood by both technical and non-technical audiences.
-title: "[Epic]"
+title: "[EPIC]"
 labels: epic
 assignees: ''
 
