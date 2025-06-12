@@ -7,7 +7,7 @@ source ./bash/log.sh
 log "Starting development server"
 
 
-mvn spring-boot:run \
+mvnw spring-boot:run \
   -Dspring-boot.run.profiles=dev \
   -Dspring-boot.run.jvmArguments="-Xmx1024m -Xms512m \
   -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" \
