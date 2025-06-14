@@ -9,14 +9,10 @@ import org.springframework.context.annotation.ComponentScan;
  * ProlinkliApplication
  */
 @SpringBootApplication(scanBasePackages = {
-		"com.prolinkli",
-		"com.prolinkli.framework",
-		"com.prolinkli.core"
+		"com.prolinkli"
 })
 @ComponentScan(basePackages = {
-		"com.prolinkli",
-		"com.prolinkli.framework",
-		"com.prolinkli.core"
+		"com.prolinkli"
 }) // Make sure your package is included
 public class ProlinkliApplication {
 

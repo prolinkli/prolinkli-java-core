@@ -26,17 +26,18 @@ public class DaoFactory {
 	/**
 	 * Creates or retrieves a DAO for the specified entity type.
 	 * 
-	 * @param <T> the entity type
-	 * @param <PK> the primary key type
-	 * @param entityClass the entity class
+	 * @param <T>             the entity type
+	 * @param <PK>            the primary key type
+	 * @param entityClass     the entity class
 	 * @param primaryKeyClass the primary key class
-	 * @param mapperClass the mapper interface class
+	 * @param mapperClass     the mapper interface class
 	 * @return a DAO instance for the entity type
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends DbModel, PK> Dao<T, PK> getDao(Class<T> entityClass, Class<PK> primaryKeyClass, Class<?> mapperClass) {
+	public <T extends DbModel, PK> Dao<T, PK> getDao(Class<T> entityClass, Class<PK> primaryKeyClass,
+			Class<?> mapperClass) {
 		String key = entityClass.getName() + "_" + mapperClass.getName();
-		
+
 		return (Dao<T, PK>) daoCache.computeIfAbsent(key, k -> {
 			try {
 				// Get the mapper bean from Spring context
@@ -49,12 +50,13 @@ public class DaoFactory {
 	}
 
 	/**
-	 * Creates or retrieves a DAO for the specified entity type using naming conventions.
+	 * Creates or retrieves a DAO for the specified entity type using naming
+	 * conventions.
 	 * This assumes the mapper follows the pattern: EntityNameMapper
 	 * 
-	 * @param <T> the entity type
-	 * @param <PK> the primary key type
-	 * @param entityClass the entity class
+	 * @param <T>             the entity type
+	 * @param <PK>            the primary key type
+	 * @param entityClass     the entity class
 	 * @param primaryKeyClass the primary key class
 	 * @return a DAO instance for the entity type
 	 */
@@ -62,6 +64,7 @@ public class DaoFactory {
 		try {
 			// Construct mapper class name based on entity name
 			String mapperClassName = entityClass.getName().replace(".model.", ".mapper.") + "Mapper";
+			System.out.println("Attempting to load mapper class: " + mapperClassName);
 			Class<?> mapperClass = Class.forName(mapperClassName);
 			return getDao(entityClass, primaryKeyClass, mapperClass);
 		} catch (ClassNotFoundException e) {

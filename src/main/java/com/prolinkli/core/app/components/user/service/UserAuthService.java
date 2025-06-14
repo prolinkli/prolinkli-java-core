@@ -8,7 +8,6 @@ import com.prolinkli.core.app.Constants.LkUserAuthenticationMethods;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.framework.auth.AuthProviderRegistry;
-import com.prolinkli.framework.auth.model.InternalAuthCredentials;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

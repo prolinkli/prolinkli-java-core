@@ -247,8 +247,12 @@ public class Dao<T extends DbModel, PK> implements IParentDao<T, PK> {
 				return null; // Handle null result appropriately
 			}
 			return (Z) result;
-		} catch (IllegalAccessException | InvocationTargetException e) {
+		} catch (IllegalAccessException e) {
 			LOGGER.error("Error invoking method: {}", method.getName(), e);
+			return null;
+		} catch (InvocationTargetException e) {
+			Throwable cause = e.getCause();
+			LOGGER.error("Internal Error invoking method: {}", method.getName(), cause);
 			return null;
 		}
 	}

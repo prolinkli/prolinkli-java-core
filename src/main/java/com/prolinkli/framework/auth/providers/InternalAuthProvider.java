@@ -5,6 +5,7 @@ import java.util.Map;
 import com.prolinkli.core.app.Constants.AuthenticationKeys;
 import com.prolinkli.core.app.Constants.LkUserAuthenticationMethods;
 import com.prolinkli.core.app.components.user.model.User;
+import com.prolinkli.core.app.components.user.model.UserPassword;
 import com.prolinkli.core.app.components.user.service.UserGetService;
 import com.prolinkli.framework.auth.model.AuthProvider;
 
@@ -26,7 +27,8 @@ public class InternalAuthProvider implements AuthProvider {
 	public Boolean authenticate(Map<String, Object> credentials) {
 		this.validateCredentials(credentials);
 
-		User user = userGetService.getUserByUsername(credentials.get(AuthenticationKeys.PASSWORD.USERNAME).toString());
+		UserPassword user = userGetService
+				.getUserWithPasswordByUsername(credentials.get(AuthenticationKeys.PASSWORD.USERNAME).toString());
 		if (user == null) {
 			throw new IllegalArgumentException("User not found for the provided username");
 		}

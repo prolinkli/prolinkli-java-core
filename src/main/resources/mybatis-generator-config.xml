@@ -21,9 +21,9 @@
 			<property name="rootClass" value="com.prolinkli.framework.db.base.DbModel"/>
 		</javaModelGenerator>
 
-    <sqlMapGenerator targetPackage="mapper"
-										 targetProject="src/main/resources/generated"
-                      />
+    <sqlMapGenerator 
+			targetPackage="com.prolinkli.core.app.db.mapper.generated"
+			targetProject="src/main/resources"/>
 
     <javaClientGenerator type="XMLMAPPER"
     										 targetPackage="com.prolinkli.core.app.db.mapper.generated"
