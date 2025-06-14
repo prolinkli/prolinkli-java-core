@@ -1,4 +1,4 @@
-package com.prolinkli.framework.config;
+package com.prolinkli.framework.config.mybatis;
 
 import javax.sql.DataSource;
 
