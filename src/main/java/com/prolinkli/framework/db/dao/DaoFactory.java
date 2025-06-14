@@ -3,6 +3,8 @@ package com.prolinkli.framework.db.dao;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -19,6 +21,8 @@ public class DaoFactory {
 
 	@Autowired
 	private ApplicationContext applicationContext;
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(DaoFactory.class);
 
 	// Cache for created DAOs to avoid recreating them
 	private final Map<String, Dao<?, ?>> daoCache = new ConcurrentHashMap<>();
@@ -64,7 +68,7 @@ public class DaoFactory {
 		try {
 			// Construct mapper class name based on entity name
 			String mapperClassName = entityClass.getName().replace(".model.", ".mapper.") + "Mapper";
-			System.out.println("Attempting to load mapper class: " + mapperClassName);
+			LOGGER.debug("Looking for mapper class: {}", mapperClassName);
 			Class<?> mapperClass = Class.forName(mapperClassName);
 			return getDao(entityClass, primaryKeyClass, mapperClass);
 		} catch (ClassNotFoundException e) {
