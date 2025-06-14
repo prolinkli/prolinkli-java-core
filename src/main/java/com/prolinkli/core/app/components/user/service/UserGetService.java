@@ -18,12 +18,12 @@ import org.springframework.stereotype.Service;
 public class UserGetService {
 
 	private final Dao<UserDb, Integer> dao;
-	private final Dao<UserPasswordDb, Integer> userPasswordDao;
+	private final Dao<UserPasswordDb, Long> userPasswordDao;
 
 	@Autowired
 	public UserGetService(DaoFactory daoFactory) {
 		this.dao = daoFactory.getDao(UserDb.class, Integer.class);
-		this.userPasswordDao = daoFactory.getDao(UserPasswordDb.class, Integer.class);
+		this.userPasswordDao = daoFactory.getDao(UserPasswordDb.class, Long.class);
 	}
 
 	public User getUserById(Integer userId) {
@@ -81,7 +81,8 @@ public class UserGetService {
 			throw new IllegalArgumentException("User not found with username: " + username);
 		}
 
-		UserPasswordDb userPasswordDb = userPasswordDao.select(user.getId().intValue());
+		System.out.println("Fetching password for user: " + user.getId());
+		UserPasswordDb userPasswordDb = userPasswordDao.select(user.getId());
 		if (userPasswordDb == null) {
 			// FIX: throw new ResourceNotFoundException when implemented
 			throw new IllegalArgumentException("User password not found for username: " + username);
@@ -110,7 +111,7 @@ public class UserGetService {
 			throw new IllegalArgumentException("User not found with ID: " + userId);
 		}
 
-		UserPasswordDb userPasswordDb = userPasswordDao.select(userId);
+		UserPasswordDb userPasswordDb = userPasswordDao.select(userId.longValue());
 		if (userPasswordDb == null) {
 			// FIX: throw new ResourceNotFoundException when implemented
 			throw new IllegalArgumentException("User password not found for ID: " + userId);
