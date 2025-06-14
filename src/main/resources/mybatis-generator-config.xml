@@ -32,11 +32,26 @@
 
 
     <!-- Example: generate for a table called 'users' -->
-    <table tableName="build_info"
+
+    <table tableName="users"
            schema="public"
-           domainObjectName="BuildInfoDb" />
+           domainObjectName="UserDb" />
+
+		<table tableName="lk_user_authentication_methods"
+           schema="public"
+           domainObjectName="LkUserAuthenticationMethodDb" />
+
+		<table tableName="user_passwords"
+           schema="public"
+           domainObjectName="UserPasswordDb" />
            
     <!-- Add more <table> entries here as needed -->
+		<!--
+			<table tableName="build_info"
+				 schema="public"
+				 domainObjectName="BuildInfoDb" />
+		-->
+
 
   </context>
 </generatorConfiguration>
