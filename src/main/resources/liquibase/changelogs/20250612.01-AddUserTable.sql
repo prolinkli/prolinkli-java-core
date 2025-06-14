@@ -25,7 +25,6 @@ select public.create_table(
 		            ',
 		foreign_keys => '[
 			{
-				"primary_key": "id",
 				"column": "authentication_method",
 				"references": "lk_user_authentication_methods(lk_authentication_method)",
 				"if_not_exists": true,
@@ -33,6 +32,7 @@ select public.create_table(
 			}
 		]',
 		options => '{
+			"primary_key": "id",
 		  "schema": "public",
 			"if_not_exists": true,
 			"add_soft_delete": false

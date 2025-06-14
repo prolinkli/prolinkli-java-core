@@ -8,10 +8,14 @@ import javax.crypto.SecretKey;
 
 import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.User;
+import com.prolinkli.core.app.db.model.generated.JwtTokenDb;
+import com.prolinkli.framework.db.dao.Dao;
+import com.prolinkli.framework.db.dao.DaoFactory;
 import com.prolinkli.framework.jwt.model.AuthToken;
 import com.prolinkli.framework.jwt.model.AuthToken.AuthTokenBuilder;
 import com.prolinkli.framework.util.map.MapUtil;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -33,12 +37,17 @@ public class JwtCreateService {
 	@Value("${jwt.issuer:Prolinkli}")
 	private String jwtIssuer;
 
+	private Dao<JwtTokenDb, Long> dao;
+
+	@Autowired
+	public JwtCreateService(DaoFactory daoFactory) {
+		this.dao = daoFactory.getDao(JwtTokenDb.class, Long.class);
+	}
+
 	// need to have a method to create JWT token and store it in the database for
 	// user authentication
 
 	public AuthToken createJwtToken(Map<String, Object> claims) {
-		// TODO: Implement JWT token creation logic here
-		// also insert the token into the database if needed
 		String accessToken = createToken(claims, jwtExpiration);
 		String refreshToken = createToken(claims, jwtRefreshExpiration);
 
@@ -51,15 +60,25 @@ public class JwtCreateService {
 		// jjwt or similar, signing it with a secret key and including the user details
 		// in the claims.
 
+		// TODO: add here as needed
 		Map<String, Object> userClaims = Map.of(
 				"username", user.getUsername(),
-				"userId", user.getId()
-		// NOTE: pull in email, or other useful fields as needed
-		);
+				"userId", user.getId());
+
 		// Merge user claims with any additional claims
 		Map<String, Object> finalClaims = MapUtil.merge(userClaims, claims);
 
 		AuthToken jwtTokens = createJwtToken(finalClaims);
+
+		JwtTokenDb jwtTokenDb = new JwtTokenDb();
+		jwtTokenDb.setUserId(user.getId());
+		jwtTokenDb.setAccessToken(jwtTokens.getAccessToken());
+		jwtTokenDb.setRefreshToken(jwtTokens.getRefreshToken());
+		jwtTokenDb.setExpiresAt(getExpirationDate(jwtExpiration));
+
+		// Save the JWT token in the database
+		dao.insert(jwtTokenDb);
+
 		AuthorizedUser authorizedUser = new AuthorizedUser(user, jwtTokens);
 
 		return authorizedUser;
