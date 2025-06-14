@@ -42,7 +42,7 @@ public class DaoFactory {
 			try {
 				// Get the mapper bean from Spring context
 				Object mapper = applicationContext.getBean(mapperClass);
-				return new Dao<>(mapper, entityClass, mapperClass);
+				return new Dao<>(mapper, entityClass, mapperClass, primaryKeyClass);
 			} catch (Exception e) {
 				throw new RuntimeException("Failed to create DAO for " + entityClass.getSimpleName(), e);
 			}

@@ -17,12 +17,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserGetService {
 
-	private final Dao<UserDb, Integer> dao;
+	private final Dao<UserDb, Long> dao;
 	private final Dao<UserPasswordDb, Long> userPasswordDao;
 
 	@Autowired
 	public UserGetService(DaoFactory daoFactory) {
-		this.dao = daoFactory.getDao(UserDb.class, Integer.class);
+		this.dao = daoFactory.getDao(UserDb.class, Long.class);
 		this.userPasswordDao = daoFactory.getDao(UserPasswordDb.class, Long.class);
 	}
 
@@ -35,7 +35,7 @@ public class UserGetService {
 			throw new IllegalArgumentException("User ID must be a positive integer");
 		}
 
-		UserDb userDb = dao.select(userId);
+		UserDb userDb = dao.select(userId.longValue());
 		if (userDb == null) {
 			// FIX: throw new ResourceNotFoundException when implemented
 			throw new IllegalArgumentException("User not found with ID: " + userId);
@@ -81,7 +81,6 @@ public class UserGetService {
 			throw new IllegalArgumentException("User not found with username: " + username);
 		}
 
-		System.out.println("Fetching password for user: " + user.getId());
 		UserPasswordDb userPasswordDb = userPasswordDao.select(user.getId());
 		if (userPasswordDb == null) {
 			// FIX: throw new ResourceNotFoundException when implemented

@@ -45,6 +45,7 @@ public class Dao<T extends DbModel, PK> implements IParentDao<T, PK> {
 	}
 
 	private final Class<T> entityType;
+	private final Class<PK> primaryKeyType;
 	private final Object mapper;
 
 	/**
@@ -54,9 +55,10 @@ public class Dao<T extends DbModel, PK> implements IParentDao<T, PK> {
 	 * @param entityType        the class type of the entity this DAO manages
 	 * @param mapperClass       the MyBatis mapper interface class
 	 */
-	public Dao(Object mapper, Class<T> entityType, Class<?> mapperClass) {
+	public Dao(Object mapper, Class<T> entityType, Class<?> mapperClass, Class<PK> primaryKeyType) {
 		this.mapper = mapper;
 		this.entityType = entityType;
+		this.primaryKeyType = primaryKeyType;
 	}
 
 	/**
@@ -94,7 +96,7 @@ public class Dao<T extends DbModel, PK> implements IParentDao<T, PK> {
 
 	@Override
 	public int delete(PK id) throws PersistenceException {
-		Method deleteMethod = getMapperMethod(MethodNames.DELETE_BY_PRIMARY_KEY_METHOD, entityType);
+		Method deleteMethod = getMapperMethod(MethodNames.DELETE_BY_PRIMARY_KEY_METHOD, primaryKeyType);
 		if (deleteMethod == null) {
 			LOGGER.error("Mapper method not found: {}", MethodNames.DELETE_BY_PRIMARY_KEY_METHOD);
 			return 0; // Handle method not found appropriately
@@ -154,7 +156,7 @@ public class Dao<T extends DbModel, PK> implements IParentDao<T, PK> {
 	@SuppressWarnings("unchecked")
 	public T select(PK id) throws PersistenceException {
 
-		Method selectMethod = getMapperMethod(MethodNames.SELECT_BY_PRIMARY_KEY_METHOD, entityType);
+		Method selectMethod = getMapperMethod(MethodNames.SELECT_BY_PRIMARY_KEY_METHOD, primaryKeyType);
 
 		if (selectMethod == null) {
 			LOGGER.error("Mapper method not found: {}", MethodNames.SELECT_BY_PRIMARY_KEY_METHOD);
