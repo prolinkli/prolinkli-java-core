@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class User {
 
-	private BigInteger id;
+	private Long id;
 	private String username;
 
 	// TODO: Add more fields as needed, such as email, password, etc. (UserDetails

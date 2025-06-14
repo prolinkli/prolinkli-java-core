@@ -1,5 +1,7 @@
 package com.prolinkli.framework.auth.model;
 
+import java.util.Map;
+
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 
 public interface AuthProvider {
@@ -21,6 +23,14 @@ public interface AuthProvider {
 	 * @param credentials the credentials to authenticate
 	 * @return an authentication token if successful, null otherwise
 	 */
-	Boolean authenticate(UserAuthenticationForm credentials);
+	Boolean authenticate(Map<String, Object> credentials);
+
+	/**
+	 * Validates the credentials provided for authentication.
+	 *
+	 * @param credentials the credentials to validate
+	 * @throws IllegalArgumentException if the credentials are invalid
+	 */
+	void validateCredentials(Map<String, Object> credentials);
 
 }
