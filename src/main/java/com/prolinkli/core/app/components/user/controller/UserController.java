@@ -19,7 +19,6 @@ class UserController {
 
 	@PostMapping("/login")
 	public User login(@RequestBody UserAuthenticationForm item) {
-
 		return userAuthService.login(item);
 	}
 

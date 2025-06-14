@@ -1,6 +1,8 @@
 package com.prolinkli.framework.auth.model;
 
-public interface AuthProvider<T> {
+import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
+
+public interface AuthProvider {
 
 	/**
 	 * Returns the name of the authentication provider.
@@ -19,6 +21,6 @@ public interface AuthProvider<T> {
 	 * @param credentials the credentials to authenticate
 	 * @return an authentication token if successful, null otherwise
 	 */
-	Boolean authenticate(T credentials);
+	Boolean authenticate(UserAuthenticationForm credentials);
 
 }

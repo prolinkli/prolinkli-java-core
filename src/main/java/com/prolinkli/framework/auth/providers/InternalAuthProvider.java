@@ -1,13 +1,17 @@
 package com.prolinkli.framework.auth.providers;
 
 import com.prolinkli.core.app.Constants.LkUserAuthenticationMethods;
+import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.framework.auth.model.AuthProvider;
-import com.prolinkli.framework.auth.model.InternalAuthCredentials;
 
 import org.springframework.stereotype.Component;
 
 @Component
-public class InternalAuthProvider implements AuthProvider<InternalAuthCredentials> {
+public class InternalAuthProvider implements AuthProvider {
+
+	public InternalAuthProvider() {
+		// Constructor can be used for initialization if needed
+	}
 
 	@Override
 	public String getProviderName() {
@@ -15,7 +19,7 @@ public class InternalAuthProvider implements AuthProvider<InternalAuthCredential
 	}
 
 	@Override
-	public Boolean authenticate(InternalAuthCredentials credentials) {
+	public Boolean authenticate(UserAuthenticationForm credentials) {
 		// TODO: Implement authentication logic
 		return true;
 	}
