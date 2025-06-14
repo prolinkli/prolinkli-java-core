@@ -5,9 +5,11 @@ import java.util.Map;
 
 import com.prolinkli.core.app.Constants.AuthenticationKeys;
 import com.prolinkli.core.app.Constants.LkUserAuthenticationMethods;
+import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.framework.auth.AuthProviderRegistry;
+import com.prolinkli.framework.jwt.services.JwtCreateService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,23 +17,44 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserAuthService {
 
-	private AuthProviderRegistry authProviderRegistry;
+	private final AuthProviderRegistry authProviderRegistry;
+	private final UserGetService userGetService;
+	private final JwtCreateService jwtCreateService;
 
 	@Autowired
-	UserAuthService(AuthProviderRegistry authProviderRegistry) {
+	UserAuthService(
+			AuthProviderRegistry authProviderRegistry,
+			UserGetService userGetService,
+			JwtCreateService jwtCreateService) {
 		this.authProviderRegistry = authProviderRegistry;
+		this.userGetService = userGetService;
+		this.jwtCreateService = jwtCreateService;
 	}
 
-	public User login(UserAuthenticationForm userAuthForm) {
+	public AuthorizedUser login(UserAuthenticationForm userAuthForm) {
 
 		if (userAuthForm == null || userAuthForm.getAuthenticationMethodLk() == null) {
 			throw new IllegalArgumentException("User authentication form and authentication method cannot be null");
 		}
 
 		var authForm = this.authProviderRegistry.getProvider(userAuthForm.getAuthenticationMethodLk());
-		authForm.authenticate(getCredentials(userAuthForm));
+		// this method does all subsequent authentication checks (including null checks)
+		if (authForm.authenticate(getCredentials(userAuthForm))) {
+			User user = userGetService.getUserByUsername(userAuthForm.getUsername());
+			// Consider checking if user is null and handle accordingly, but this shouldn't
+			// happen if the authentication method is correct
+			try {
+				return jwtCreateService.createJwtTokenForUser(user, getCredentials(userAuthForm));
+			} catch (Exception e) {
+				// Handle JWT creation failure, log it, or rethrow as needed
+				throw new RuntimeException("Failed to create JWT token for user: " + user.getUsername(), e);
+			}
+		}
 
-		return new User(); // TODO: Implement login logic
+		// TODO: generate JWT token
+
+		// TODO: throw new exception when implemented
+		return null;
 	}
 
 	private Map<String, Object> getCredentials(UserAuthenticationForm userAuthForm) {

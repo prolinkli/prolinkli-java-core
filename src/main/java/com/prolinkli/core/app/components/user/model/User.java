@@ -13,4 +13,13 @@ public class User {
 	// TODO: Add more fields as needed, such as email, password, etc. (UserDetails
 	// object)
 
+	public User() {
+		// Default constructor for serialization/deserialization
+	}
+
+	public User(Long id, String username) {
+		this.id = id;
+		this.username = username;
+	}
+
 }

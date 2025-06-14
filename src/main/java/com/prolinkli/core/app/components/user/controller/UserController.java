@@ -1,5 +1,6 @@
 package com.prolinkli.core.app.components.user.controller;
 
+import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.core.app.components.user.service.UserAuthService;
@@ -18,7 +19,7 @@ class UserController {
 	UserAuthService userAuthService;
 
 	@PostMapping("/login")
-	public User login(@RequestBody UserAuthenticationForm item) {
+	public AuthorizedUser login(@RequestBody UserAuthenticationForm item) {
 		return userAuthService.login(item);
 	}
 
