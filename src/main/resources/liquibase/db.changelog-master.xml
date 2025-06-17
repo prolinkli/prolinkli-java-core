@@ -6,6 +6,9 @@
    http://www.liquibase.org/xml/ns/dbchangelog
    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
+		<!-- Functions and procedures -->
+		<includeAll path="functions" relativeToChangelogFile="true" />
+
     <!-- Initial scripts -->
     <includeAll path="init" relativeToChangelogFile="true" />
 

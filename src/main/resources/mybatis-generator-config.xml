@@ -21,9 +21,11 @@
 			<property name="rootClass" value="com.prolinkli.framework.db.base.DbModel"/>
 		</javaModelGenerator>
 
-    <sqlMapGenerator targetPackage="mapper"
-										 targetProject="src/main/resources/generated"
-                      />
+
+		<sqlMapGenerator 
+				targetPackage="mapper.generated"
+				targetProject="src/main/resources"/>
+
 
     <javaClientGenerator type="XMLMAPPER"
     										 targetPackage="com.prolinkli.core.app.db.mapper.generated"
@@ -32,11 +34,28 @@
 
 
     <!-- Example: generate for a table called 'users' -->
-    <table tableName="build_info"
+
+    <table tableName="users"
            schema="public"
-           domainObjectName="BuildInfoDb" />
+           domainObjectName="UserDb" />
+
+		<table tableName="lk_user_authentication_methods"
+           schema="public"
+           domainObjectName="LkUserAuthenticationMethodDb" />
+
+		<table tableName="user_passwords"
+           schema="public"
+           domainObjectName="UserPasswordDb" />
+
+		<table tableName="build_info"
+					 schema="public"
+					 domainObjectName="BuildInfoDb" />
            
     <!-- Add more <table> entries here as needed -->
+		<!--
+
+		-->
+
 
   </context>
 </generatorConfiguration>
