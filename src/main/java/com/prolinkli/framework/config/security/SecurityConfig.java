@@ -2,8 +2,10 @@ package com.prolinkli.framework.config.security;
 
 import com.prolinkli.framework.jwt.http.JwtRequestValidator;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -11,13 +13,11 @@ import org.springframework.security.web.authentication.preauth.AbstractPreAuthen
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true) // Enable @PreAuthorize and @PostAuthorize
 public class SecurityConfig {
 
-	private final JwtRequestValidator beforeFilter;
-
-	public SecurityConfig() {
-		this.beforeFilter = new JwtRequestValidator();
-	}
+	@Autowired
+	private JwtRequestValidator jwtRequestValidator;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -25,9 +25,10 @@ public class SecurityConfig {
 		http
 				.csrf(csrf -> csrf.disable()) // Disable CSRF for simplicity, adjust as needed
 				.authorizeHttpRequests(auth -> {
-					auth.anyRequest().permitAll(); // Require authentication for all requests
+					// Allow all requests by default - let method-level security handle authorization
+					auth.anyRequest().permitAll();
 				})
-				.addFilterBefore(beforeFilter, AbstractPreAuthenticatedProcessingFilter.class);
+				.addFilterBefore(jwtRequestValidator, AbstractPreAuthenticatedProcessingFilter.class);
 
 		return http.build();
 	}

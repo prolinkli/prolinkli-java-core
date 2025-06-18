@@ -1,4 +1,4 @@
-package com.prolinkli.framework.jwt.services;
+package com.prolinkli.framework.jwt.service;
 
 import com.prolinkli.core.app.db.model.generated.JwtTokenDb;
 import com.prolinkli.framework.db.dao.Dao;

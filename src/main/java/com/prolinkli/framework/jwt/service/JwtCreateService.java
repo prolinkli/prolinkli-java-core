@@ -1,4 +1,4 @@
-package com.prolinkli.framework.jwt.services;
+package com.prolinkli.framework.jwt.service;
 
 import java.security.Key;
 import java.util.Date;
