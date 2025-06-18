@@ -31,7 +31,7 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 		if (authentication == null || !authentication.isAuthenticated()) {
-			LOGGER.debug("Current user authentication not found: {}", authentication.getPrincipal());
+			LOGGER.debug("Current user authentication not found");
 			return null;
 		}
 

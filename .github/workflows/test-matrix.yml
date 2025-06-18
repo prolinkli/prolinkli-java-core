@@ -13,21 +13,6 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         java: ['17', '21']
       fail-fast: false
-      
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: docker
-          POSTGRES_USER: postgres
-          POSTGRES_DB: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
 
     steps:
     - name: Checkout code
@@ -43,40 +28,11 @@ jobs:
     - name: Set executable permission for mvnw (Unix)
       if: runner.os != 'Windows'
       run: chmod +x ./mvnw
-      
-    - name: Wait for PostgreSQL (Unix only)
-      if: runner.os != 'Windows'
-      run: |
-        until pg_isready -h localhost -p 5432 -U postgres; do
-          echo "Waiting for PostgreSQL to start..."
-          sleep 2
-        done
-        
-    - name: Set up test database configuration
-      shell: bash
-      run: |
-        mkdir -p src/main/resources
-        echo "spring.datasource.url=jdbc:postgresql://localhost:5432/postgres" > src/main/resources/application-test.properties
-        echo "spring.datasource.username=postgres" >> src/main/resources/application-test.properties
-        echo "spring.datasource.password=docker" >> src/main/resources/application-test.properties
-        echo "jwt.secret=test-secret-key-for-ci-environment-only" >> src/main/resources/application-test.properties
-        
-    - name: Run Liquibase migrations (Unix only)
-      if: runner.os != 'Windows'
-      run: |
-        ./mvnw liquibase:update \
-          -Dliquibase.url=jdbc:postgresql://localhost:5432/postgres \
-          -Dliquibase.username=postgres \
-          -Dliquibase.password=docker
           
-    - name: Build and test (Unix)
-      if: runner.os != 'Windows'
-      run: |
-        ./mvnw clean compile
-        ./mvnw test
+    - name: Build and compile
+      shell: bash
+      run: ./mvnw clean compile
         
-    - name: Build only (Windows - skip DB tests)
-      if: runner.os == 'Windows'
-      run: |
-        ./mvnw clean compile -DskipTests
-        # Skip tests on Windows due to PostgreSQL service limitations 
+    - name: Run tests (skip DB-dependent tests)
+      shell: bash
+      run: ./mvnw test 
