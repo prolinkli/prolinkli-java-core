@@ -36,15 +36,12 @@ public class JwtVerifyService {
 	@Autowired
 	private UserGetService userGetService;
 
-	private Jws<Claims> currentClaimsContext;
-
 	@Autowired
 	JwtVerifyService() {
 	}
 
 	public boolean verifyToken(String token, HttpServletResponse response) {
 		try {
-			currentClaimsContext = null; // Reset current claims context
 			// Implement your JWT verification logic here
 			if (token == null || token.isEmpty()) {
 				LOGGER.debug("JWT token is null or empty");
@@ -148,7 +145,7 @@ public class JwtVerifyService {
 		}
 
 		// finally check if the user exists in the database
-		User user = userGetService.getUserById(userId.intValue());
+		User user = userGetService.getUserById(userId);
 		if (user == null) {
 			LOGGER.debug("User with ID {} does not exist in the database", userId);
 			return false; // User does not exist in the database
@@ -203,15 +200,10 @@ public class JwtVerifyService {
 
 	private Jws<Claims> getClaims(String token) {
 		try {
-
-			if (currentClaimsContext == null) {
-				currentClaimsContext = Jwts.parser()
-						.verifyWith(JwtUtil.getSecretKey(jwtSecret))
-						.build()
-						.parseSignedClaims(token);
-			}
-
-			return currentClaimsContext;
+			return Jwts.parser()
+					.verifyWith(JwtUtil.getSecretKey(jwtSecret))
+					.build()
+					.parseSignedClaims(token);
 
 		} catch (Exception e) {
 			LOGGER.error("Error parsing JWT token: {}", e.getMessage());
