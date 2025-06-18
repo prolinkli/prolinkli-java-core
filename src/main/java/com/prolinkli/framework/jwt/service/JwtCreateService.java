@@ -4,8 +4,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.Map;
 
-import javax.crypto.SecretKey;
-
+import com.prolinkli.core.app.Constants.Jwt;
 import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.db.model.generated.JwtTokenDb;
@@ -13,6 +12,7 @@ import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
 import com.prolinkli.framework.jwt.model.AuthToken;
 import com.prolinkli.framework.jwt.model.AuthToken.AuthTokenBuilder;
+import com.prolinkli.framework.jwt.util.JwtUtil;
 import com.prolinkli.framework.util.map.MapUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,8 +62,8 @@ public class JwtCreateService {
 
 		// TODO: add here as needed
 		Map<String, Object> userClaims = Map.of(
-				"username", user.getUsername(),
-				"userId", user.getId());
+				Jwt.USER_ID_CLAIMS_KEY, user.getId(),
+				Jwt.USERNAME_CLAIMS_KEY, user.getUsername());
 
 		// Merge user claims with any additional claims
 		Map<String, Object> finalClaims = MapUtil.merge(userClaims, claims);
@@ -74,7 +74,7 @@ public class JwtCreateService {
 		jwtTokenDb.setUserId(user.getId());
 		jwtTokenDb.setAccessToken(jwtTokens.getAccessToken());
 		jwtTokenDb.setRefreshToken(jwtTokens.getRefreshToken());
-		jwtTokenDb.setExpiresAt(getExpirationDate(jwtExpiration));
+		jwtTokenDb.setExpiresAt(JwtUtil.getExpirationDate(jwtExpiration));
 
 		// Save the JWT token in the database
 		dao.insert(jwtTokenDb);
@@ -89,23 +89,11 @@ public class JwtCreateService {
 				.claims()
 				.issuer(jwtIssuer) // Set the issuer
 				.add(claims)
-				.expiration(getExpirationDate(expiration)) // Set expiration
+				.expiration(JwtUtil.getExpirationDate(expiration)) // Set expiration
 				.and()
 				// Set expiration, signing key, etc. as needed
-				.signWith(getSignInKey())
+				.signWith(JwtUtil.getHmacShaKey(jwtSecret))
 				.compact();
-	}
-
-	/**
-	 * Get signing key for HMAC
-	 */
-	private Key getSignInKey() {
-		byte[] keyBytes = jwtSecret.getBytes();
-		return Keys.hmacShaKeyFor(keyBytes);
-	}
-
-	private Date getExpirationDate(long expiration) {
-		return new Date(System.currentTimeMillis() + expiration * 1000);
 	}
 
 }

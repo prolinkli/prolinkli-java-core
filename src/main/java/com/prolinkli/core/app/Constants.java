@@ -28,6 +28,13 @@ public final class Constants {
 		}
 	}
 
+	public static final class Jwt {
+		public static final String USER_ID_CLAIMS_KEY = "userId";
+		public static final Class<?> USER_ID_CLAIMS_CLASS = Integer.class;
+		public static final String USERNAME_CLAIMS_KEY = "username";
+		public static final Class<?> USERNAME_CLAIMS_CLASS = String.class;
+	}
+
 	public static final class AuthenticationKeys {
 		public static final class PASSWORD {
 			public static final String USERNAME = "username";

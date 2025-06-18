@@ -30,14 +30,21 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
 
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-		if (authentication != null && authentication.isAuthenticated()) {
+		if (authentication == null || !authentication.isAuthenticated()) {
 			LOGGER.debug("Current user authentication found: {}", authentication.getPrincipal());
 			return null;
 		}
 
-		if (authentication.getPrincipal() instanceof Integer) {
-			Integer userId = (Integer) authentication.getPrincipal();
-			return userGetService.getUserById(userId);
+		if (authentication.getPrincipal() instanceof Long) {
+			LOGGER.debug("Current user ID found in authentication: {}", authentication.getPrincipal());
+			Long userId = (Long) authentication.getPrincipal();
+			User user = userGetService.getUserById(userId);
+			if (user != null) {
+				LOGGER.debug("Current user found: {}", user);
+				return user;
+			} else {
+				LOGGER.warn("User not found for ID: {}", userId);
+			}
 		}
 
 		return null;

@@ -36,7 +36,7 @@ public class JwtRequestValidator extends OncePerRequestFilter {
 
 		if (token != null && jwtVerifyService.verifyToken(token, response)) {
 			// Extract user information from JWT
-			String userId = jwtVerifyService.extractUserId(token);
+			Long userId = jwtVerifyService.extractUserId(token);
 			List<String> authorities = jwtVerifyService.extractAuthorities(token);
 
 			// Convert authorities to Spring Security format
@@ -47,7 +47,7 @@ public class JwtRequestValidator extends OncePerRequestFilter {
 			// Create authentication token with user details
 			Authentication authentication = new UsernamePasswordAuthenticationToken(
 					userId, // principal - user ID from JWT
-					null, // credentials
+					null, // credentials - not used here
 					grantedAuthorities // authorities from JWT
 			);
 
