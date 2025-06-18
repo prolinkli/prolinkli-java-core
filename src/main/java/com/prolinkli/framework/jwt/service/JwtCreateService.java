@@ -19,14 +19,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.prolinkli.framework.config.secrets.SecretsManager;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtCreateService {
 
-	@Value("${jwt.secret}")
-	private String jwtSecret;
+	private final SecretsManager secretsManager;
 
 	@Value("${jwt.expiration:3600}")
 	private long jwtExpiration;
@@ -34,14 +35,12 @@ public class JwtCreateService {
 	@Value("${jwt.refreshExpiration:7200}")
 	private long jwtRefreshExpiration;
 
-	@Value("${jwt.issuer:Prolinkli}")
-	private String jwtIssuer;
-
 	private Dao<JwtTokenDb, Long> dao;
 
 	@Autowired
-	public JwtCreateService(DaoFactory daoFactory) {
+	public JwtCreateService(DaoFactory daoFactory, SecretsManager secretsManager) {
 		this.dao = daoFactory.getDao(JwtTokenDb.class, Long.class);
+		this.secretsManager = secretsManager;
 	}
 
 	// need to have a method to create JWT token and store it in the database for
@@ -87,12 +86,12 @@ public class JwtCreateService {
 	private String createToken(Map<String, Object> claims, Long expiration) {
 		return Jwts.builder()
 				.claims()
-				.issuer(jwtIssuer) // Set the issuer
+				.issuer(secretsManager.getJwtIssuer()) // Set the issuer
 				.add(claims)
 				.expiration(JwtUtil.getExpirationDate(expiration)) // Set expiration
 				.and()
 				// Set expiration, signing key, etc. as needed
-				.signWith(JwtUtil.getHmacShaKey(jwtSecret))
+				.signWith(JwtUtil.getHmacShaKey(secretsManager.getJwtSecret()))
 				.compact();
 	}
 

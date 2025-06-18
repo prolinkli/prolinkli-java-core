@@ -17,6 +17,7 @@ import io.jsonwebtoken.Jwts;
 import com.prolinkli.core.app.Constants.Jwt;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.service.UserGetService;
+import com.prolinkli.framework.config.secrets.SecretsManager;
 import com.prolinkli.framework.jwt.model.AuthToken;
 import com.prolinkli.framework.jwt.util.JwtUtil;
 
@@ -27,8 +28,7 @@ public class JwtVerifyService {
 
 	final private static Logger LOGGER = LoggerFactory.getLogger(JwtVerifyService.class);
 
-	@Value("${jwt.secret}")
-	private String jwtSecret;
+	private final SecretsManager secretsManager;
 
 	@Autowired
 	private JwtGetService jwtGetService;
@@ -37,7 +37,8 @@ public class JwtVerifyService {
 	private UserGetService userGetService;
 
 	@Autowired
-	JwtVerifyService() {
+	public JwtVerifyService(SecretsManager secretsManager) {
+		this.secretsManager = secretsManager;
 	}
 
 	public boolean verifyToken(String token, HttpServletResponse response) {
@@ -201,7 +202,7 @@ public class JwtVerifyService {
 	private Jws<Claims> getClaims(String token) {
 		try {
 			return Jwts.parser()
-					.verifyWith(JwtUtil.getSecretKey(jwtSecret))
+					.verifyWith(JwtUtil.getSecretKey(secretsManager.getJwtSecret()))
 					.build()
 					.parseSignedClaims(token);
 
