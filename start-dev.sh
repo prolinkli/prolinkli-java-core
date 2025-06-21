@@ -4,7 +4,7 @@ source ./bash/log.sh
 
 # This script is used to start the development server for the project.
 
-log "Starting development server"
+log_info "Starting development server"
 
 
 ./mvnw spring-boot:run \

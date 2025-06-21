@@ -27,6 +27,10 @@ public class UserGetService {
 	}
 
 	public User getUserById(Integer userId) {
+		return getUserById(userId.longValue());
+	}
+
+	public User getUserById(Long userId) {
 
 		if (userId == null) {
 			throw new IllegalArgumentException("User ID cannot be null");
@@ -35,13 +39,12 @@ public class UserGetService {
 			throw new IllegalArgumentException("User ID must be a positive integer");
 		}
 
-		UserDb userDb = dao.select(userId.longValue());
+		UserDb userDb = dao.select(userId);
 		if (userDb == null) {
 			// FIX: throw new ResourceNotFoundException when implemented
 			throw new IllegalArgumentException("User not found with ID: " + userId);
 		}
 
-		// TODO: replace with abstractprovider when implemented
 		User user = new User();
 		user.setId(userDb.getId());
 		user.setUsername(userDb.getUsername());

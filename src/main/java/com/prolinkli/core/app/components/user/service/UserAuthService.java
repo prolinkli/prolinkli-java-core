@@ -9,7 +9,7 @@ import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.framework.auth.AuthProviderRegistry;
-import com.prolinkli.framework.jwt.services.JwtCreateService;
+import com.prolinkli.framework.jwt.service.JwtCreateService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

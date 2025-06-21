@@ -5,6 +5,7 @@ import com.prolinkli.core.app.components.buildinfo.service.BuildInfoGetService;
 import com.prolinkli.core.app.components.buildinfo.service.BuildInfoSetService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +26,7 @@ public class BuildInfoController {
 	private BuildInfoSetService buildInfoSetService;
 
 	@GetMapping("")
+	@PreAuthorize("isAuthenticated()")
 	public BuildInfo getBuildInfo() {
 		return buildInfoGetService.getBuildInfo();
 	}
