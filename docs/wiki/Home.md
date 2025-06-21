@@ -15,15 +15,24 @@ Welcome to the comprehensive documentation for the ProLinkLi Java Core Framework
 
 ### Getting Started
 - **[Getting Started Guide](Getting-Started)** - Complete setup instructions for all platforms
-- **[Windows Setup](Windows-Setup)** - Detailed Windows-specific setup guide
-- **[macOS Setup](macOS-Setup)** - macOS-specific installation instructions
-- **[Linux Setup](Linux-Setup)** - Linux distribution-specific setup guides
+- **[Framework Overview](Framework-Overview)** - Architecture and core components overview
+- **[Project Structure](Project-Structure)** - Understanding the codebase organization
 
-### Framework Usage
+### Authentication & Security
+- **[Authentication Framework](Authentication-Framework)** - Pluggable authentication system
+- **[JWT System](JWT-System)** - Token creation, validation, and management
+- **[Secret Management](Secret-Management)** - Environment-based configuration and secrets
+- **[User Management](User-Management)** - User entities and services
+
+### Data Access Layer
 - **[DAO Framework](DAO-Framework)** - Complete guide to the Generic DAO pattern
 - **[Database Management](Database-Management)** - Liquibase migrations and MyBatis code generation
-- **[Configuration](Configuration)** - Application configuration and profiles
-- **[Testing](Testing)** - Testing strategies and best practices
+- **[MyBatis Integration](MyBatis-Integration)** - Deep dive into MyBatis usage
+
+### Configuration & Setup
+- **[Configuration System](Configuration-System)** - Application configuration and profiles
+- **[Development Workflow](Development-Workflow)** - Development workflows and commands
+- **[Testing Guide](Testing-Guide)** - Testing strategies and best practices
 
 ### Development
 - **[Development Guide](Development-Guide)** - Development workflows and commands
