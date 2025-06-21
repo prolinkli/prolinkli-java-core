@@ -2,7 +2,66 @@
 
 The ProLinkLi Java Core Framework provides a powerful Generic DAO pattern that automatically integrates with MyBatis generated mappers, offering type-safe data access with minimal configuration.
 
-## 🏗️ Architecture Overview
+## 🏗️ DAO Framework Architecture
+
+```mermaid
+graph TB
+    subgraph "🏭 DAO Factory Layer"
+        DF["DaoFactory<br/>📋 Creates & Caches DAOs"]
+        CACHE["DAO Cache<br/>💾 ConcurrentHashMap"]
+    end
+    
+    subgraph "🎯 Generic DAO Layer"
+        DAO["Dao&lt;T, PK&gt;<br/>🔧 Generic Implementation"]
+        IPARENT["IParentDao&lt;T, PK&gt;<br/>📜 CRUD Interface"]
+    end
+    
+    subgraph "🗺️ MyBatis Layer"
+        MAPPER["Generated Mapper<br/>🏗️ UserDbMapper"]
+        CUSTOM["Custom Mapper<br/>✨ UserMapper extends UserDbMapper"]
+        XML["Mapper XML<br/>📄 SQL Definitions"]
+    end
+    
+    subgraph "🗄️ Database Layer"
+        DB["PostgreSQL<br/>🐘 Database"]
+        TABLES["Tables<br/>📊 user, jwt_token, etc."]
+    end
+    
+    subgraph "📦 Model Layer"
+        ENTITY["Entity Models<br/>👤 UserDb, JwtTokenDb"]
+        EXAMPLE["Example Classes<br/>🔍 UserDbExample"]
+        DTO["DTOs<br/>📋 User, AuthorizedUser"]
+    end
+    
+    %% Service Layer
+    SERVICE["📋 Service Layer<br/>(UserService, JwtService)"] --> DF
+    
+    %% DAO Factory Flow
+    DF --> CACHE
+    DF --> DAO
+    DAO -.-> IPARENT
+    
+    %% DAO to MyBatis Flow  
+    DAO --> MAPPER
+    MAPPER --> XML
+    MAPPER -.-> CUSTOM
+    
+    %% MyBatis to Database
+    XML --> DB
+    DB --> TABLES
+    
+    %% Model Relationships
+    DAO --> ENTITY
+    DAO --> EXAMPLE
+    SERVICE --> DTO
+    
+    %% Styling
+    style DF fill:#e3f2fd
+    style DAO fill:#e8f5e8
+    style MAPPER fill:#fff3e0
+    style DB fill:#fce4ec
+    style SERVICE fill:#f3e5f5
+```
 
 The DAO framework consists of three main components:
 
@@ -28,6 +87,48 @@ public class UserService {
         // Now you can perform CRUD operations
     }
 }
+```
+
+### CRUD Operations Flow
+
+```mermaid
+flowchart LR
+    subgraph "📝 CREATE Operations"
+        C1["userDao.insert(user)"] --> C2["Generated INSERT SQL"]
+        C2 --> C3["🆔 Auto-generated ID returned"]
+    end
+    
+    subgraph "📖 READ Operations"
+        R1["userDao.select(userId)"] --> R2["Generated SELECT SQL"]
+        R2 --> R3["👤 User object returned"]
+        
+        R4["userDao.select(example)"] --> R5["Complex WHERE clause"]
+        R5 --> R6["📊 List&lt;User&gt; returned"]
+    end
+    
+    subgraph "🔄 UPDATE Operations"
+        U1["userDao.update(user)"] --> U2["Generated UPDATE SQL"]
+        U2 --> U3["🔢 Rows affected count"]
+        
+        U4["userDao.update(data, example)"] --> U5["Conditional UPDATE"]
+        U5 --> U6["🔢 Rows affected count"]
+    end
+    
+    subgraph "❌ DELETE Operations"
+        D1["userDao.delete(userId)"] --> D2["Generated DELETE SQL"]
+        D2 --> D3["🔢 Rows affected count"]
+        
+        D4["userDao.delete(example)"] --> D5["Conditional DELETE"]
+        D5 --> D6["🔢 Rows affected count"]
+    end
+    
+    style C1 fill:#e8f5e8
+    style R1 fill:#e3f2fd
+    style R4 fill:#e3f2fd
+    style U1 fill:#fff3e0
+    style U4 fill:#fff3e0
+    style D1 fill:#ffebee
+    style D4 fill:#ffebee
 ```
 
 ### CRUD Operations
