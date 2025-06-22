@@ -62,7 +62,7 @@ class UserController {
     if (user == null) {
       throw new IllegalStateException("User not authenticated");
     }
-    return user;
+    return AuthorizedUser.strip(user);
   }
 
 }

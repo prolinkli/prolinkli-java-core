@@ -64,7 +64,8 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
   public boolean supportsParameter(MethodParameter parameter) {
     // TODO Auto-generated method stub
     return parameter.hasParameterAnnotation(CurrentUser.class)
-        && parameter.getParameterType().equals(User.class);
+        && (parameter.getParameterType().equals(User.class)
+            || parameter.getParameterType().equals(AuthorizedUser.class));
   }
 
 }
