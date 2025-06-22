@@ -1,6 +1,7 @@
 package com.prolinkli.framework.jwt.service;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.prolinkli.core.app.components.user.model.AuthorizedUser;
@@ -9,6 +10,7 @@ import com.prolinkli.core.app.db.model.generated.JwtTokenDbExample;
 import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
 import com.prolinkli.framework.jwt.model.AuthToken;
+import com.prolinkli.framework.jwt.model.AuthTokenType;
 
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.slf4j.Logger;
@@ -49,14 +51,14 @@ public class JwtSaveService {
     AuthToken authToken = authorizedUser.getAuthToken();
 
     // Verify the existing token
-    if (!jwtVerifyService.verifyToken(authToken.getRefreshToken(), response)) {
+    if (!jwtVerifyService.verifyToken(authToken.getRefreshToken(), AuthTokenType.REFRESH, response)) {
       // TODO: Handle the case where the token is invalid
       throw new RuntimeException("Refresh token is invalid or expired");
     }
 
     disposeTokens(authToken);
     // Create a new token
-    AuthorizedUser newUser = jwtCreateService.createJwtTokenForUser(authorizedUser, null);
+    AuthorizedUser newUser = jwtCreateService.createJwtTokenForUser(authorizedUser, Map.of());
 
     return newUser;
   }

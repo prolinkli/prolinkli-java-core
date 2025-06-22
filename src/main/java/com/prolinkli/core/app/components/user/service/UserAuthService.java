@@ -10,9 +10,12 @@ import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.framework.auth.AuthProviderRegistry;
 import com.prolinkli.framework.jwt.service.JwtCreateService;
+import com.prolinkli.framework.jwt.service.JwtSaveService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @Service
 public class UserAuthService {
@@ -20,15 +23,18 @@ public class UserAuthService {
   private final AuthProviderRegistry authProviderRegistry;
   private final UserGetService userGetService;
   private final JwtCreateService jwtCreateService;
+  private final JwtSaveService jwtSaveService;
 
   @Autowired
   UserAuthService(
       AuthProviderRegistry authProviderRegistry,
       UserGetService userGetService,
-      JwtCreateService jwtCreateService) {
+      JwtCreateService jwtCreateService,
+      JwtSaveService jwtSaveService) {
     this.authProviderRegistry = authProviderRegistry;
     this.userGetService = userGetService;
     this.jwtCreateService = jwtCreateService;
+    this.jwtSaveService = jwtSaveService;
   }
 
   public AuthorizedUser login(UserAuthenticationForm userAuthForm) {
@@ -53,6 +59,14 @@ public class UserAuthService {
 
     // TODO: throw new exception when implemented
     return null;
+  }
+
+  public AuthorizedUser refresh(AuthorizedUser user, HttpServletResponse response) {
+    if (user == null) {
+      throw new IllegalStateException("User not authenticated");
+    }
+
+    return jwtSaveService.regenerateTokens(user, response);
   }
 
   private Map<String, Object> getCredentials(UserAuthenticationForm userAuthForm) {

@@ -48,12 +48,12 @@ class UserController {
     return user;
   }
 
-  @GetMapping("/")
-  public AuthorizedUser refresh(@CurrentUser AuthorizedUser user) {
+  @GetMapping("/refresh")
+  public AuthorizedUser refresh(@CurrentUser AuthorizedUser user, HttpServletResponse response) {
     if (user == null) {
       throw new IllegalStateException("User not authenticated");
     }
-    return user;
+    return userAuthService.refresh(user, response);
   }
 
   @PreAuthorize("isAuthenticated()")
