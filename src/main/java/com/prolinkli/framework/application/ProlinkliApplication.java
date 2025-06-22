@@ -9,18 +9,18 @@ import org.springframework.context.annotation.ComponentScan;
  * ProlinkliApplication
  */
 @SpringBootApplication(scanBasePackages = {
-		"com.prolinkli"
+    "com.prolinkli"
 })
 @ComponentScan(basePackages = {
-		"com.prolinkli"
+    "com.prolinkli"
 }) // Make sure your package is included
 public class ProlinkliApplication {
 
-	private final static Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ProlinkliApplication.class);
+  private final static Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ProlinkliApplication.class);
 
-	public static void main(String[] args) {
-		SpringApplication.run(ProlinkliApplication.class, args);
-		LOGGER.info("Prolinkli Application started successfully.");
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(ProlinkliApplication.class, args);
+    LOGGER.info("Prolinkli Application started successfully.");
+  }
 
 }

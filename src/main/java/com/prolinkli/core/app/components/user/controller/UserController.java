@@ -1,11 +1,15 @@
 package com.prolinkli.core.app.components.user.controller;
 
+import java.util.List;
+
 import com.prolinkli.core.app.Constants.Cookies;
 import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.core.app.components.user.service.UserAuthService;
 import com.prolinkli.framework.auth.model.CurrentUser;
+import com.prolinkli.framework.cookies.service.CookieSaveService;
+import com.prolinkli.framework.cookies.util.JwtCookieUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,27 +27,26 @@ import jakarta.servlet.http.HttpServletResponse;
 class UserController {
 
   @Autowired
-  UserAuthService userAuthService;
+  private UserAuthService userAuthService;
 
+  @Autowired
+  private CookieSaveService cookieSaveService;
+
+  /**
+   * Login endpoint for user authentication.
+   * 
+   * @param item     User authentication form containing credentials.
+   * @param response HttpServletResponse to set cookies.
+   * @return AuthorizedUser object containing user details and auth token.
+   */
   @PostMapping("/login")
   public AuthorizedUser login(@RequestBody UserAuthenticationForm item, HttpServletResponse response) {
     AuthorizedUser user = userAuthService.login(item);
 
     // Create cookies with proper path settings
-    Cookie accessTokenCookie = new Cookie(Cookies.Authentication.ACCESS_TOKEN, user.getAuthToken().getAccessToken());
-    accessTokenCookie.setPath("/"); // Make available to all paths
-    accessTokenCookie.setHttpOnly(true); // Security: prevent XSS access
-
-    Cookie refreshTokenCookie = new Cookie(Cookies.Authentication.REFRESH_TOKEN, user.getAuthToken().getRefreshToken());
-    refreshTokenCookie.setPath("/");
-    refreshTokenCookie.setHttpOnly(true);
-
-    Cookie userIdCookie = new Cookie(Cookies.Authentication.USER_ID, user.getId().toString());
-    userIdCookie.setPath("/");
-
-    response.addCookie(accessTokenCookie);
-    response.addCookie(refreshTokenCookie);
-    response.addCookie(userIdCookie);
+    cookieSaveService.saveCookies(
+        JwtCookieUtil.createAuthCookies(user.getAuthToken()),
+        response);
 
     return user;
   }
@@ -53,7 +56,16 @@ class UserController {
     if (user == null) {
       throw new IllegalStateException("User not authenticated");
     }
-    return userAuthService.refresh(user, response);
+
+    // try to refresh the user
+    AuthorizedUser newUser = userAuthService.refresh(user, response);
+
+    // save cookies
+    cookieSaveService.saveCookies(
+        JwtCookieUtil.createAuthCookies(newUser.getAuthToken()),
+        response);
+
+    return newUser;
   }
 
   @PreAuthorize("isAuthenticated()")
