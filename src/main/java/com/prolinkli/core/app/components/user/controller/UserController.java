@@ -22,39 +22,47 @@ import jakarta.servlet.http.HttpServletResponse;
 @RequestMapping("/user")
 class UserController {
 
-	@Autowired
-	UserAuthService userAuthService;
+  @Autowired
+  UserAuthService userAuthService;
 
-	@PostMapping("/login")
-	public AuthorizedUser login(@RequestBody UserAuthenticationForm item, HttpServletResponse response) {
-		AuthorizedUser user = userAuthService.login(item);
+  @PostMapping("/login")
+  public AuthorizedUser login(@RequestBody UserAuthenticationForm item, HttpServletResponse response) {
+    AuthorizedUser user = userAuthService.login(item);
 
-		// Create cookies with proper path settings
-		Cookie accessTokenCookie = new Cookie(Cookies.Authentication.ACCESS_TOKEN, user.getAuthToken().getAccessToken());
-		accessTokenCookie.setPath("/"); // Make available to all paths
-		accessTokenCookie.setHttpOnly(true); // Security: prevent XSS access
+    // Create cookies with proper path settings
+    Cookie accessTokenCookie = new Cookie(Cookies.Authentication.ACCESS_TOKEN, user.getAuthToken().getAccessToken());
+    accessTokenCookie.setPath("/"); // Make available to all paths
+    accessTokenCookie.setHttpOnly(true); // Security: prevent XSS access
 
-		Cookie refreshTokenCookie = new Cookie(Cookies.Authentication.REFRESH_TOKEN, user.getAuthToken().getRefreshToken());
-		refreshTokenCookie.setPath("/");
-		refreshTokenCookie.setHttpOnly(true);
+    Cookie refreshTokenCookie = new Cookie(Cookies.Authentication.REFRESH_TOKEN, user.getAuthToken().getRefreshToken());
+    refreshTokenCookie.setPath("/");
+    refreshTokenCookie.setHttpOnly(true);
 
-		Cookie userIdCookie = new Cookie(Cookies.Authentication.USER_ID, user.getId().toString());
-		userIdCookie.setPath("/");
+    Cookie userIdCookie = new Cookie(Cookies.Authentication.USER_ID, user.getId().toString());
+    userIdCookie.setPath("/");
 
-		response.addCookie(accessTokenCookie);
-		response.addCookie(refreshTokenCookie);
-		response.addCookie(userIdCookie);
+    response.addCookie(accessTokenCookie);
+    response.addCookie(refreshTokenCookie);
+    response.addCookie(userIdCookie);
 
-		return user;
-	}
+    return user;
+  }
 
-	@PreAuthorize("isAuthenticated()")
-	@GetMapping("/me")
-	public User getCurrentUser(@CurrentUser User user) {
-		if (user == null) {
-			throw new IllegalStateException("User not authenticated");
-		}
-		return user;
-	}
+  @GetMapping("/")
+  public AuthorizedUser refresh(@CurrentUser AuthorizedUser user) {
+    if (user == null) {
+      throw new IllegalStateException("User not authenticated");
+    }
+    return user;
+  }
+
+  @PreAuthorize("isAuthenticated()")
+  @GetMapping("/me")
+  public User getCurrentUser(@CurrentUser User user) {
+    if (user == null) {
+      throw new IllegalStateException("User not authenticated");
+    }
+    return user;
+  }
 
 }
