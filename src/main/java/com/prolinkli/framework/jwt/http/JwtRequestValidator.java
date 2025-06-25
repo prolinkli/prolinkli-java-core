@@ -13,61 +13,50 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.prolinkli.framework.jwt.model.AuthToken;
 import com.prolinkli.framework.jwt.service.JwtVerifyService;
-import com.prolinkli.core.app.Constants;
+import com.prolinkli.framework.jwt.util.JwtUtil;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JwtRequestValidator extends OncePerRequestFilter {
 
-	@Autowired
-	private JwtVerifyService jwtVerifyService;
+  @Autowired
+  private JwtVerifyService jwtVerifyService;
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-			throws ServletException, IOException {
+  @Override
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      throws ServletException, IOException {
 
-		String token = extractJwtFromCookies(request);
+    AuthToken authToken = JwtUtil.extractJwtFromCookies(request);
+    String token = authToken.getAccessToken();
 
-		if (token != null && jwtVerifyService.verifyToken(token, response)) {
-			// Extract user information from JWT
-			Long userId = jwtVerifyService.extractUserId(token);
-			List<String> authorities = jwtVerifyService.extractAuthorities(token);
+    if (token != null && jwtVerifyService.verifyToken(token, response)) {
+      // Extract user information from JWT
+      Long userId = jwtVerifyService.extractUserId(token);
+      List<String> authorities = jwtVerifyService.extractAuthorities(token);
 
-			// Convert authorities to Spring Security format
-			List<GrantedAuthority> grantedAuthorities = authorities.stream()
-					.map(auth -> new SimpleGrantedAuthority("ROLE_" + auth))
-					.collect(Collectors.toList());
+      // Convert authorities to Spring Security format
+      List<GrantedAuthority> grantedAuthorities = authorities.stream()
+          .map(auth -> new SimpleGrantedAuthority("ROLE_" + auth))
+          .collect(Collectors.toList());
 
-			// Create authentication token with user details
-			Authentication authentication = new UsernamePasswordAuthenticationToken(
-					userId, // principal - user ID from JWT
-					null, // credentials - not used here
-					grantedAuthorities // authorities from JWT
-			);
+      // Create authentication token with user details
+      Authentication authentication = new UsernamePasswordAuthenticationToken(
+          userId, // principal - user ID from JWT
+          authToken, // credentials - not used here
+          grantedAuthorities // authorities from JWT
+      );
 
-			// Set authentication in security context
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-		}
+      // Set authentication in security context
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
 
-		filterChain.doFilter(request, response);
-	}
+    filterChain.doFilter(request, response);
+  }
 
-	private String extractJwtFromCookies(HttpServletRequest request) {
-		Cookie[] cookies = request.getCookies();
-		if (cookies != null) {
-			for (Cookie cookie : cookies) {
-				// Look for access token cookie using the constant
-				if (Constants.Cookies.Authentication.ACCESS_TOKEN.equals(cookie.getName())) {
-					return cookie.getValue();
-				}
-			}
-		}
-		return null;
-	}
 }
