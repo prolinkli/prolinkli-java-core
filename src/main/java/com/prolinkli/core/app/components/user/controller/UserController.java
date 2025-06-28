@@ -1,8 +1,12 @@
 package com.prolinkli.core.app.components.user.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.prolinkli.core.app.Constants.AuthenticationKeys;
 import com.prolinkli.core.app.Constants.Cookies;
+import com.prolinkli.core.app.Constants.LkUserAuthenticationMethods;
 import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.Cookie;
@@ -42,6 +47,37 @@ class UserController {
   @PostMapping("/login")
   public AuthorizedUser login(@RequestBody UserAuthenticationForm item, HttpServletResponse response) {
     AuthorizedUser user = userAuthService.login(item);
+
+    // Create cookies with proper path settings
+    cookieSaveService.saveCookies(
+        JwtCookieUtil.createAuthCookies(user.getAuthToken()),
+        response);
+
+    return user;
+  }
+
+  /**
+   * Google OAuth2 login endpoint.
+   * Frontend sends the Google ID token received from Google OAuth2 flow.
+   * 
+   * @param request  Map containing the Google ID token
+   * @param response HttpServletResponse to set cookies.
+   * @return AuthorizedUser object containing user details and auth token.
+   */
+  @PostMapping("/login/google")
+  public AuthorizedUser loginWithGoogle(@RequestBody Map<String, String> request, HttpServletResponse response) {
+    String idToken = request.get("idToken");
+    if (idToken == null || idToken.trim().isEmpty()) {
+      throw new IllegalArgumentException("Google ID token is required");
+    }
+
+    // Create authentication form for the service
+    UserAuthenticationForm authForm = new UserAuthenticationForm();
+    authForm.setAuthenticationMethodLk(LkUserAuthenticationMethods.GOOGLE_OAUTH2);
+    authForm.setSpecialToken(idToken);
+
+    // Authenticate using the existing service
+    AuthorizedUser user = userAuthService.login(authForm);
 
     // Create cookies with proper path settings
     cookieSaveService.saveCookies(

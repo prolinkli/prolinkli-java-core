@@ -117,6 +117,21 @@ public class SecretsManager {
     }
 
     /**
+     * OAuth2 configuration getters
+     */
+    public String getGoogleClientId() {
+        return getRequiredSecret("GOOGLE_OAUTH_CLIENT_ID");
+    }
+
+    public String getGoogleClientSecret() {
+        return getRequiredSecret("GOOGLE_OAUTH_CLIENT_SECRET");
+    }
+
+    public String getGoogleRedirectUri() {
+        return getRequiredSecret("GOOGLE_OAUTH_REDIRECT_URI");
+    }
+
+    /**
      * Environment configuration
      */
     public String getEnvironment() {

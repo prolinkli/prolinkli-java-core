@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Redirecting...</title>
+</head>
+<body>
+    <div style="text-align: center; margin-top: 50px;">
+        <p>Redirecting...</p>
+        <div class="spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto;"></div>
+    </div>
+    
+    <script th:inline="javascript">
+        // Send JSON POST request instead of form submission
+        const data = {
+            idToken: /*[[${code}]]*/ '',
+            provider: /*[[${provider}]]*/ ''
+        };
+        
+        const redirectUrl = /*[[${redirectUrl}]]*/ '';
+        
+        fetch(redirectUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (response.ok) {
+                // Use the redirect URL that was passed in
+                window.location.href = redirectUrl;
+            } else {
+                console.error('Login failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    </script>
+    
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</body>
+</html> 

@@ -17,7 +17,21 @@ public final class Constants {
 
 	public static final class LkUserAuthenticationMethods {
 		public static final String PASSWORD = "INTERNAL";
+		public static final String GOOGLE_OAUTH2 = "GOOGLE_OAUTH2";
 	}
+
+  public static final class OAuth2ProvidersLks {
+    public static final String GOOGLE = "google";
+    public static final String FACEBOOK = "facebook";
+    public static final String MICROSOFT = "microsoft";
+  }
+
+  public static final class OAuth2Providers {
+    public static final class Google {
+      public static final String CODE_KEY = "code";
+      public static final String STATE_KEY = "state";
+    }
+  }
 
 	public static final class Cookies {
 		public static final class Authentication {
@@ -39,6 +53,13 @@ public final class Constants {
 		public static final class PASSWORD {
 			public static final String USERNAME = "username";
 			public static final String PASSWORD = "password";
+		}
+		
+		public static final class GOOGLE_OAUTH2 {
+			public static final String CODE = "code";
+			public static final String STATE = "state";
+			public static final String ID_TOKEN = "id_token";
+			public static final String ACCESS_TOKEN = "access_token";
 		}
 	}
 

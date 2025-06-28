@@ -82,6 +82,11 @@ public class UserAuthService {
       return credentials;
     }
 
+    if (LkUserAuthenticationMethods.GOOGLE_OAUTH2.equals(userAuthForm.getAuthenticationMethodLk())) {
+      credentials.put(AuthenticationKeys.GOOGLE_OAUTH2.ID_TOKEN, userAuthForm.getSpecialToken());
+      return credentials;
+    }
+
     throw new IllegalArgumentException(
         "Unsupported authentication method: " + userAuthForm.getAuthenticationMethodLk());
   }
