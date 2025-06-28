@@ -93,6 +93,13 @@ public class GoogleOAuth2Provider implements AuthProvider {
     }
   }
 
+  @Override
+  public void insertCredentialsForUser(User user, Map<String, Object> credentials) {
+    // This method is not applicable for Google OAuth2 as credentials are not stored
+    // in the same way as traditional username/password systems.
+    throw new UnsupportedOperationException("Google OAuth2 does not support inserting credentials directly. Not yet.");
+  }
+
   private GoogleIdToken verifyGoogleIdToken(String idTokenString)
       throws GeneralSecurityException, IOException {
 
