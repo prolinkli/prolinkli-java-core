@@ -11,9 +11,9 @@
     </div>
     
     <script th:inline="javascript">
-        // Send JSON POST request instead of form submission
+        // Send JSON POST request with the ID token (not the authorization code)
         const data = {
-            idToken: /*[[${code}]]*/ '',
+            idToken: /*[[${idToken}]]*/ '',
             provider: /*[[${provider}]]*/ ''
         };
         

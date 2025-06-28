@@ -51,6 +51,10 @@ public class OAuth2Controller {
 
     AbstractOAuthService svc = getOAuth2Service(id);
 
+    if (code == null || code.isEmpty()) {
+      throw new IllegalArgumentException("Missing code parameter in callback");
+    }
+
     Map<String, Object> params = Map.of(
         "code", code,
         "state", state != null ? state : "");
@@ -62,7 +66,7 @@ public class OAuth2Controller {
     // Create a POST redirect using an auto-submitting form
     ModelAndView modelAndView = new ModelAndView("postRedirect");
     modelAndView.addObject("redirectUrl", forward);
-    modelAndView.addObject("code", code);
+    modelAndView.addObject("idToken", request.getAttribute("idToken"));
     modelAndView.addObject("provider", svc.getProviderName());
 
     return modelAndView;

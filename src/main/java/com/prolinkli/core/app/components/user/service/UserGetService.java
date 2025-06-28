@@ -3,7 +3,6 @@ package com.prolinkli.core.app.components.user.service;
 import java.math.BigInteger;
 
 import com.prolinkli.core.app.Constants;
-import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserPassword;
 import com.prolinkli.core.app.db.model.generated.UserDb;
@@ -11,7 +10,6 @@ import com.prolinkli.core.app.db.model.generated.UserDbExample;
 import com.prolinkli.core.app.db.model.generated.UserPasswordDb;
 import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
-import com.prolinkli.framework.jwt.service.JwtGetService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
