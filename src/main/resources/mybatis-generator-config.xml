@@ -33,11 +33,18 @@
                          />
 
 
-    <!-- Example: generate for a table called 'users' -->
-
     <table tableName="users"
            schema="public"
-           domainObjectName="UserDb" />
+           domainObjectName="UserDb">
+      <generatedKey column="id" sqlStatement="JDBC" identity="true" />
+      <columnOverride column="id" isGeneratedAlways="true" />
+      <columnOverride column="created_at" isGeneratedAlways="true" />
+      <columnOverride column="updated_at" isGeneratedAlways="true" />
+    </table>
+
+    <!-- Example: generate for a table called 'users' -->
+    <!--
+
 
 		<table tableName="lk_user_authentication_methods"
            schema="public"
@@ -55,10 +62,7 @@
 					 schema="public"
 					 domainObjectName="JwtTokenDb" />
            
-    <!-- Add more <table> entries here as needed -->
-		<!--
-
-		-->
+    -->
 
 
   </context>
