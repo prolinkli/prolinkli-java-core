@@ -1,8 +1,5 @@
 package com.prolinkli.core.app.components.user.controller;
 
-import java.util.List;
-
-import com.prolinkli.core.app.Constants.Cookies;
 import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
@@ -21,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.websocket.server.PathParam;
 
 @RestController
 @RequestMapping("/user")
