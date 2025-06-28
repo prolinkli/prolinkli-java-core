@@ -2,12 +2,26 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Redirecting...</title>
+    <title>Authentication</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div style="text-align: center; margin-top: 50px;">
+    <div id="loadingContent" style="text-align: center; margin-top: 50px;">
         <p>Redirecting...</p>
         <div class="spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto;"></div>
+    </div>
+    
+    <div id="errorContent" style="display: none; text-align: center; margin-top: 50px;">
+        <div class="error-icon">⚠️</div>
+        <h2>Authentication Error</h2>
+        <p id="errorMessage">An error occurred during authentication.</p>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2025 Prolinkli. All rights reserved.</p>
     </div>
     
     <script th:inline="javascript">
@@ -31,18 +45,85 @@
                 // Use the redirect URL that was passed in
                 window.location.href = redirectUrl;
             } else {
-                console.error('Login failed');
+                // Parse error response
+                return response.json().then(errorData => {
+                    throw new Error(errorData.message || 'Login failed');
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
+            showErrorContent(error.message || 'Authentication failed. Please try again.');
         });
+        
+        function showErrorContent(message) {
+            document.getElementById('loadingContent').style.display = 'none';
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorContent').style.display = 'block';
+        }
     </script>
     
     <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            color: #e74c3c;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        #errorMessage {
+            color: #666;
+            margin-bottom: 30px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+        
+        .retry-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        .retry-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+            padding: 15px;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .footer p {
+            margin: 0;
         }
     </style>
 </body>
