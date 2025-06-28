@@ -35,10 +35,6 @@ public class AuthToken {
     }
 
     public AuthToken build() {
-      if (this.accessToken == null || this.accessToken.isEmpty() || this.refreshToken == null
-          || this.refreshToken.isEmpty()) {
-        throw new IllegalArgumentException("Access token and refresh token must not be null or empty");
-      }
       AuthToken token = new AuthToken();
       token.setId(this.id);
       token.setAccessToken(this.accessToken);

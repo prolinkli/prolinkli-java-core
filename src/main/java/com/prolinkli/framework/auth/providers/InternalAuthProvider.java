@@ -81,7 +81,7 @@ public class InternalAuthProvider implements AuthProvider {
     // For example:
     UserPassword userPassword = new UserPassword();
     userPassword.setUser(user);
-    userPassword.setPassword(Hasher.hashString(password));
+    userPassword.setPassword(password);
 
     // Save the userPassword object to the database (not shown here)
     internalAuthService.insertCredentialsForUser(user.getId(), userPassword);

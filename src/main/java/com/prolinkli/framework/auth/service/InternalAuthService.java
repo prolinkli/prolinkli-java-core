@@ -45,7 +45,7 @@ public class InternalAuthService {
     // Validate that the user exists
     userGetService.getUserById(userId);
 
-    //REPLACE BY PROVIDEr
+    //REPLACE BY PROVIDER
     UserPasswordDb userPasswordDb = new UserPasswordDb();
     userPasswordDb.setUserId(userId);
     userPasswordDb.setPasswordHash(Hasher.hashString(credentials.getPassword()));

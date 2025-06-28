@@ -7,6 +7,7 @@ import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.core.app.components.user.service.UserAuthService;
+import com.prolinkli.core.app.components.user.service.UserCreateService;
 import com.prolinkli.framework.auth.model.CurrentUser;
 import com.prolinkli.framework.cookies.service.CookieSaveService;
 import com.prolinkli.framework.cookies.util.JwtCookieUtil;
@@ -19,8 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.websocket.server.PathParam;
 
 @RestController
 @RequestMapping("/user")
@@ -28,6 +29,9 @@ class UserController {
 
   @Autowired
   private UserAuthService userAuthService;
+
+  @Autowired
+  private UserCreateService userCreateService;
 
   @Autowired
   private CookieSaveService cookieSaveService;
@@ -42,6 +46,27 @@ class UserController {
   @PostMapping("/login")
   public AuthorizedUser login(@RequestBody UserAuthenticationForm item, HttpServletResponse response) {
     AuthorizedUser user = userAuthService.login(item);
+
+    // Create cookies with proper path settings
+    cookieSaveService.saveCookies(
+        JwtCookieUtil.createAuthCookies(user.getAuthToken()),
+        response);
+
+    return user;
+  }
+
+  /**
+   * Register endpoint for user creation.
+   * 
+   * @param item     User authentication form containing credentials.
+   * @param response HttpServletResponse to set cookies.
+   * @return AuthorizedUser object containing user details and auth token.
+   */
+  @PostMapping("/register")
+  public AuthorizedUser register(@RequestBody UserAuthenticationForm form,
+      HttpServletResponse response) {
+
+    AuthorizedUser user = userCreateService.createUser(form);
 
     // Create cookies with proper path settings
     cookieSaveService.saveCookies(

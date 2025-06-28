@@ -33,6 +33,11 @@ public class JwtRequestValidator extends OncePerRequestFilter {
       throws ServletException, IOException {
 
     AuthToken authToken = JwtUtil.extractJwtFromCookies(request);
+    if (authToken == null) {
+      // If no token is found, continue the filter chain without authentication
+      filterChain.doFilter(request, response);
+      return;
+    }
     String token = authToken.getAccessToken();
 
     if (token != null && jwtVerifyService.verifyToken(token, response)) {
