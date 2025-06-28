@@ -1,4 +1,4 @@
-package com.prolinkli.core.app.errorhandling;
+package com.prolinkli.framework.exception;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
