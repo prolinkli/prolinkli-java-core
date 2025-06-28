@@ -5,12 +5,15 @@ import java.util.Map;
 
 import com.prolinkli.core.app.Constants;
 import com.prolinkli.core.app.Constants.AuthenticationKeys;
+import com.prolinkli.core.app.Constants.LkUserAuthenticationMethods;
 import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.core.app.db.model.generated.UserDb;
 import com.prolinkli.core.app.db.model.generated.UserDbExample;
 import com.prolinkli.framework.auth.model.AuthProvider;
+import com.prolinkli.framework.auth.providers.GoogleOAuth2Provider;
+import com.prolinkli.framework.auth.util.OAuthUsernameUtil;
 import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
 
@@ -35,6 +38,9 @@ public class UserCreateService {
   private UserAuthService userAuthService;
 
   @Autowired
+  private GoogleOAuth2Provider googleOAuth2Provider;
+
+  @Autowired
   public UserCreateService(List<AuthProvider> authProviders, DaoFactory daoFactory) {
     this.authProviders = authProviders;
     this.dao = daoFactory.getDao(UserDb.class, Long.class);
@@ -54,6 +60,81 @@ public class UserCreateService {
 
     AuthProvider authProvider = getAuthProvider(user.getAuthenticationMethodLk());
 
+    // Handle OAuth user creation differently
+    if (LkUserAuthenticationMethods.GOOGLE_OAUTH2.equals(user.getAuthenticationMethodLk())) {
+      return createOAuthUser(user, authProvider);
+    }
+
+    // Handle traditional password-based user creation
+    return createPasswordUser(user, authProvider);
+  }
+
+  private AuthorizedUser createOAuthUser(UserAuthenticationForm user, AuthProvider authProvider) {
+    try {
+      // Extract user information from Google ID token
+      String idToken = user.getSpecialToken();
+      var googleUserInfo = googleOAuth2Provider.getGoogleUserInfo(idToken);
+      
+      if (googleUserInfo == null) {
+        throw new IllegalArgumentException("Failed to extract user information from Google ID token");
+      }
+
+      String email = googleUserInfo.getEmail();
+      String googleUserId = googleUserInfo.getSubject();
+      
+      if (email == null || email.isEmpty() || googleUserId == null || googleUserId.isEmpty()) {
+        throw new IllegalArgumentException("Google ID token does not contain required user information");
+      }
+
+      // Generate system username
+      String systemUsername = OAuthUsernameUtil.generateOAuthUsername(email, googleUserId);
+      user.setUsername(systemUsername);
+
+      // Check if user already exists
+      User foundUser = null;
+      try {
+        foundUser = userGetService.getUserByUsername(systemUsername);
+      } catch (IllegalArgumentException e) {
+        // User does not exist, proceed with creation.
+      }
+
+      if (foundUser != null) {
+        throw new IllegalArgumentException("User already exists with username: " + systemUsername);
+      }
+
+      validateUserName(systemUsername);
+
+      // Insert the user into the database
+      UserDb userDb = new UserDb();
+      userDb.setUsername(systemUsername);
+      userDb.setAuthenticationMethod(user.getAuthenticationMethodLk().toUpperCase());
+
+      LOGGER.debug("Inserting OAuth user into database: {}", systemUsername);
+      dao.insert(userDb);
+      
+      // Verify that the insert was successful and ID was generated
+      if (userDb.getId() == null) {
+        throw new RuntimeException("Database insert failed - no ID was generated for user: " + systemUsername);
+      }
+      
+      user.setId(userDb.getId());
+
+      // For OAuth users, we don't need to store credentials in the traditional way
+      // The OAuth provider handles authentication
+      LOGGER.info("Successfully created OAuth user: {}:{} with email: {}", user.getId(), systemUsername, email);
+
+      // Return the authorized user by performing login
+      return userAuthService.login(user);
+
+    } catch (Exception e) {
+      // Rollback the user creation if anything fails
+      rollback(user);
+      LOGGER.error("Failed to create OAuth user: {}", e.getMessage());
+      throw new RuntimeException("Failed to create OAuth user: " + e.getMessage(), e);
+    }
+  }
+
+  private AuthorizedUser createPasswordUser(UserAuthenticationForm user, AuthProvider authProvider) {
     User foundUser = null;
     try {
       foundUser = userGetService.getUserByUsername(user.getUsername());
@@ -76,7 +157,14 @@ public class UserCreateService {
     userDb.setUsername(user.getUsername());
     userDb.setAuthenticationMethod(user.getAuthenticationMethodLk().toUpperCase());
 
+    LOGGER.debug("Inserting password user into database: {}", user.getUsername());
     dao.insert(userDb);
+    
+    // Verify that the insert was successful and ID was generated
+    if (userDb.getId() == null) {
+      throw new RuntimeException("Database insert failed - no ID was generated for user: " + user.getUsername());
+    }
+    
     // TODO: implement mapper
     user.setId(userDb.getId());
 
@@ -94,7 +182,6 @@ public class UserCreateService {
 
     // Return the authorized user.
     return userAuthService.login(user);
-
   }
 
   private void validateUserName(String username) {

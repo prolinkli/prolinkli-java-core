@@ -111,6 +111,8 @@ class UserController {
     return user;
   }
 
+
+
   @GetMapping("/refresh")
   public AuthorizedUser refresh(@CurrentUser AuthorizedUser user, HttpServletResponse response) {
     if (user == null) {
