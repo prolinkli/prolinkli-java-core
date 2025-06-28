@@ -2,6 +2,7 @@ package com.prolinkli.framework.auth.model;
 
 import java.util.Map;
 
+import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 
 public interface AuthProvider {
@@ -32,5 +33,21 @@ public interface AuthProvider {
 	 * @throws IllegalArgumentException if the credentials are invalid
 	 */
 	void validateCredentials(Map<String, Object> credentials);
+
+
+  /**
+   * Inserts credentials for a user authentication form.
+   * This method is used to store credentials in the database or any other storage
+   * system.
+   *
+   * This is effectively a "create" method for the credentials, which means it allows
+   * the system to authenticate the user in the future.
+   *
+   * Can be used to insert credentials, or reset credentials for a user.
+   *
+   * @param {@link com.prolinkli.core.app.components.user.model.User}  the user for whom the credentials are being inserted
+   * @param credentials basic credentials depending on the provider 
+   */
+  void insertCredentialsForUser(User user, Map<String, Object> credentials);
 
 }
