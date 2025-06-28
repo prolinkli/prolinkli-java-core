@@ -8,6 +8,7 @@ import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserPassword;
 import com.prolinkli.core.app.components.user.service.UserGetService;
 import com.prolinkli.framework.auth.model.AuthProvider;
+import com.prolinkli.framework.auth.service.InternalAuthService;
 import com.prolinkli.framework.hash.Hasher;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ public class InternalAuthProvider implements AuthProvider {
 
   @Autowired
   private UserGetService userGetService;
+
+  @Autowired
+  private InternalAuthService internalAuthService;
 
   @Override
   public String getProviderName() {
@@ -66,6 +70,22 @@ public class InternalAuthProvider implements AuthProvider {
     if (password == null || password.isEmpty()) {
       throw new IllegalArgumentException("Password cannot be null or empty");
     }
+  }
+
+  public void insertCredentialsForUser(User user, Map<String, Object> credentials) {
+    this.validateCredentials(credentials);
+
+    String password = credentials.get(AuthenticationKeys.PASSWORD.PASSWORD).toString();
+
+    // Here you would typically save the user and password to the database
+    // For example:
+    UserPassword userPassword = new UserPassword();
+    userPassword.setUser(user);
+    userPassword.setPassword(password);
+
+    // Save the userPassword object to the database (not shown here)
+    internalAuthService.insertCredentialsForUser(user.getId(), userPassword);
+
   }
 
 }
