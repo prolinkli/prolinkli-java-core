@@ -10,7 +10,6 @@ import com.prolinkli.core.app.db.model.generated.UserDbExample;
 import com.prolinkli.core.app.db.model.generated.UserPasswordDb;
 import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
-import com.prolinkli.framework.exception.exceptions.model.ResourceNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,17 +29,19 @@ public class UserGetService {
 	public User getUserById(Integer userId) {
 
 		if (userId == null) {
-			throw new ResourceNotFoundException("User ID cannot be null");
+			throw new IllegalArgumentException("User ID cannot be null");
 		}
 		if (Constants.User.STARTING_ID.compareTo(BigInteger.valueOf(userId)) > 0) {
-			throw new ResourceNotFoundException("User ID must be a positive integer");
+			throw new IllegalArgumentException("User ID must be a positive integer");
 		}
 
 		UserDb userDb = dao.select(userId.longValue());
 		if (userDb == null) {
-			throw new ResourceNotFoundException("User not found with ID: " + userId);
+			// FIX: throw new ResourceNotFoundException when implemented
+			throw new IllegalArgumentException("User not found with ID: " + userId);
 		}
 
+		// TODO: replace with abstractprovider when implemented
 		User user = new User();
 		user.setId(userDb.getId());
 		user.setUsername(userDb.getUsername());
@@ -51,14 +52,15 @@ public class UserGetService {
 	public User getUserByUsername(String username) {
 
 		if (username == null || username.isEmpty()) {
-			throw new ResourceNotFoundException("Username cannot be null or empty");
+			throw new IllegalArgumentException("Username cannot be null or empty");
 		}
 
 		UserDbExample example = new UserDbExample();
 		example.createCriteria().andUsernameEqualTo(username);
 		UserDb userDb = dao.select(example).stream().findFirst().orElse(null);
 		if (userDb == null) {
-			throw new ResourceNotFoundException("User not found with username: " + username);
+			// FIX: throw new ResourceNotFoundException when implemented
+			throw new IllegalArgumentException("User not found with username: " + username);
 		}
 
 		User user = new User();
@@ -70,17 +72,19 @@ public class UserGetService {
 	public UserPassword getUserWithPasswordByUsername(String username) {
 
 		if (username == null || username.isEmpty()) {
-			throw new ResourceNotFoundException("Username cannot be null or empty");
+			throw new IllegalArgumentException("Username cannot be null or empty");
 		}
 
 		User user = getUserByUsername(username);
 		if (user == null) {
-			throw new ResourceNotFoundException("User not found with username: " + username);
+			// FIX: throw new ResourceNotFoundException when implemented
+			throw new IllegalArgumentException("User not found with username: " + username);
 		}
 
 		UserPasswordDb userPasswordDb = userPasswordDao.select(user.getId());
 		if (userPasswordDb == null) {
-			throw new ResourceNotFoundException("User password not found for username: " + username);
+			// FIX: throw new ResourceNotFoundException when implemented
+			throw new IllegalArgumentException("User password not found for username: " + username);
 		}
 
 		UserPassword userPassword = new UserPassword();
@@ -102,12 +106,14 @@ public class UserGetService {
 
 		User user = getUserById(userId);
 		if (user == null) {
-			throw new ResourceNotFoundException("User not found with ID: " + userId);
+			// FIX: throw new ResourceNotFoundException when implemented
+			throw new IllegalArgumentException("User not found with ID: " + userId);
 		}
 
 		UserPasswordDb userPasswordDb = userPasswordDao.select(userId.longValue());
 		if (userPasswordDb == null) {
-			throw new ResourceNotFoundException("User password not found for ID: " + userId);
+			// FIX: throw new ResourceNotFoundException when implemented
+			throw new IllegalArgumentException("User password not found for ID: " + userId);
 		}
 
 		UserPassword userPassword = new UserPassword();
