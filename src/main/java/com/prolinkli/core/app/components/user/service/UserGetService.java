@@ -8,9 +8,9 @@ import com.prolinkli.core.app.components.user.model.UserPassword;
 import com.prolinkli.core.app.db.model.generated.UserDb;
 import com.prolinkli.core.app.db.model.generated.UserDbExample;
 import com.prolinkli.core.app.db.model.generated.UserPasswordDb;
-import com.prolinkli.core.app.errorhandling.ResourceNotFoundException;
 import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
+import com.prolinkli.framework.exception.exceptions.ResourceNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,19 +30,17 @@ public class UserGetService {
 	public User getUserById(Integer userId) {
 
 		if (userId == null) {
-			throw new IllegalArgumentException("User ID cannot be null");
+			throw new ResourceNotFoundException("User ID cannot be null");
 		}
 		if (Constants.User.STARTING_ID.compareTo(BigInteger.valueOf(userId)) > 0) {
-			throw new IllegalArgumentException("User ID must be a positive integer");
+			throw new ResourceNotFoundException("User ID must be a positive integer");
 		}
 
 		UserDb userDb = dao.select(userId.longValue());
 		if (userDb == null) {
-			// FIX: throw new ResourceNotFoundException when implemented
-			throw new IllegalArgumentException("User not found with ID: " + userId);
+			throw new ResourceNotFoundException("User not found with ID: " + userId);
 		}
 
-		// TODO: replace with abstractprovider when implemented
 		User user = new User();
 		user.setId(userDb.getId());
 		user.setUsername(userDb.getUsername());
