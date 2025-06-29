@@ -9,21 +9,30 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+import com.prolinkli.core.app.Constants;
 import com.prolinkli.core.app.Constants.AuthenticationKeys;
 import com.prolinkli.core.app.Constants.LkUserAuthenticationMethods;
+import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.core.app.components.user.service.UserGetService;
+import com.prolinkli.core.app.db.model.generated.UserDb;
 import com.prolinkli.framework.auth.model.AuthProvider;
 import com.prolinkli.framework.auth.service.GoogleOAuth2Service;
+import com.prolinkli.framework.auth.util.AuthValidationUtil;
 import com.prolinkli.framework.auth.util.OAuthUsernameUtil;
 import com.prolinkli.framework.config.secrets.SecretsManager;
+import com.prolinkli.framework.db.dao.Dao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class GoogleOAuth2Provider implements AuthProvider {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(GoogleOAuth2Provider.class);
 
   @Autowired
   private SecretsManager secretsManager;
@@ -77,6 +86,74 @@ public class GoogleOAuth2Provider implements AuthProvider {
     } catch (IllegalArgumentException e) {
       // Re-throw IllegalArgumentException with more context
       throw new IllegalArgumentException("Google authentication failed: " + e.getMessage(), e);
+    }
+  }
+
+  @Override
+  public void createUser(UserAuthenticationForm user, Dao<UserDb, Long> dao) {
+    try {
+      // Extract user information from Google ID token
+      String idToken = user.getSpecialToken();
+      var googleUserInfo = getGoogleUserInfo(idToken);
+
+      if (googleUserInfo == null) {
+        throw new IllegalArgumentException("Failed to extract user information from Google ID token");
+      }
+
+      String email = googleUserInfo.getEmail();
+      String googleUserId = googleUserInfo.getSubject();
+
+      if (email == null || email.isEmpty() || googleUserId == null || googleUserId.isEmpty()) {
+        throw new IllegalArgumentException("Google ID token does not contain required user information");
+      }
+
+      // Generate system username
+      String systemUsername = OAuthUsernameUtil.generateOAuthUsername(email, googleUserId);
+      user.setUsername(systemUsername);
+
+      // Check if user already exists
+      User foundUser = null;
+      try {
+        foundUser = userGetService.getUserByUsername(systemUsername);
+      } catch (IllegalArgumentException e) {
+        // User does not exist, proceed with creation.
+      }
+
+      if (foundUser != null) {
+        throw new IllegalArgumentException("User already exists with username: " + systemUsername);
+      }
+
+      AuthValidationUtil.validateUserName(systemUsername);
+
+      // Insert the user into the database
+      UserDb userDb = new UserDb();
+      userDb.setUsername(systemUsername);
+      userDb.setAuthenticationMethod(user.getAuthenticationMethodLk().toUpperCase());
+
+      LOGGER.debug("Inserting OAuth user into database: {}", systemUsername);
+      dao.insert(userDb);
+
+      // Verify that the insert was successful and ID was generated
+      if (userDb.getId() == null) {
+        throw new RuntimeException("Database insert failed - no ID was generated for user: " + systemUsername);
+      }
+
+      user.setId(userDb.getId());
+
+      // insert credentials for the OAuth user
+      insertCredentialsForUser(user, Map.of(
+          Constants.AuthenticationKeys.GOOGLE_OAUTH2.ID_TOKEN, idToken,
+          Constants.AuthenticationKeys.GOOGLE_OAUTH2.SUBJECT, googleUserId));
+
+      // For OAuth users, we don't need to store credentials in the traditional way
+      // The OAuth provider handles authentication
+      LOGGER.info("Successfully created OAuth user: {}:{} with email: {}", user.getId(), systemUsername, email);
+
+      return;
+
+    } catch (Exception e) {
+      // Rollback the user creation if anything fails
+      throw new RuntimeException("Failed to create OAuth user: " + e.getMessage(), e);
     }
   }
 

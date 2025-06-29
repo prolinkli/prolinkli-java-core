@@ -8,15 +8,22 @@ import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.core.app.components.user.model.UserPassword;
 import com.prolinkli.core.app.components.user.service.UserGetService;
+import com.prolinkli.core.app.db.model.generated.UserDb;
 import com.prolinkli.framework.auth.model.AuthProvider;
 import com.prolinkli.framework.auth.service.InternalAuthService;
+import com.prolinkli.framework.auth.util.AuthValidationUtil;
+import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.hash.Hasher;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class InternalAuthProvider implements AuthProvider {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(InternalAuthProvider.class);
 
   @Autowired
   private UserGetService userGetService;
@@ -45,6 +52,45 @@ public class InternalAuthProvider implements AuthProvider {
     }
 
     return true;
+  }
+
+  @Override
+  public void createUser(UserAuthenticationForm user, Dao<UserDb, Long> dao) {
+    User foundUser = null;
+    try {
+      foundUser = userGetService.getUserByUsername(user.getUsername());
+    } catch (IllegalArgumentException e) {
+      // User does not exist, proceed with creation.
+    }
+
+    if (foundUser != null) {
+      throw new IllegalArgumentException("User already exists with username: " + user.getUsername());
+    }
+
+    AuthValidationUtil.validateUserName(user.getUsername());
+
+    Map<String, Object> credentials = Map.of(
+        AuthenticationKeys.PASSWORD.USERNAME, user.getUsername(),
+        AuthenticationKeys.PASSWORD.PASSWORD, user.getSpecialToken());
+
+    // Insert the user into the database.
+    UserDb userDb = new UserDb();
+    userDb.setUsername(user.getUsername());
+    userDb.setAuthenticationMethod(user.getAuthenticationMethodLk().toUpperCase());
+
+    LOGGER.debug("Inserting password user into database: {}", user.getUsername());
+    dao.insert(userDb);
+
+    // Verify that the insert was successful and ID was generated
+    if (userDb.getId() == null) {
+      throw new RuntimeException("Database insert failed - no ID was generated for user: " + user.getUsername());
+    }
+
+    user.setId(userDb.getId());
+
+    validateCredentials(credentials);
+    // Insert the credentials for the user.
+    insertCredentialsForUser(user, credentials);
   }
 
   @Override
@@ -102,6 +148,6 @@ public class InternalAuthProvider implements AuthProvider {
     }
 
     return user;
-  } 
+  }
 
 }

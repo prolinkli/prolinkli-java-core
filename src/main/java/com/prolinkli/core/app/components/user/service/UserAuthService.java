@@ -44,13 +44,14 @@ public class UserAuthService {
     }
 
     var authForm = this.authProviderRegistry.getProvider(userAuthForm.getAuthenticationMethodLk());
+    getCredentials(userAuthForm);
     // this method does all subsequent authentication checks (including null checks)
-    if (authForm.authenticate(getCredentials(userAuthForm))) {
+    if (authForm.authenticate(userAuthForm.getParameters())) {
       User user = authForm.getUserFromCredentials(userAuthForm);
       // Consider checking if user is null and handle accordingly, but this shouldn't
       // happen if the authentication method is correct
       try {
-        return jwtCreateService.createJwtTokenForUser(user, getCredentials(userAuthForm));
+        return jwtCreateService.createJwtTokenForUser(user, userAuthForm.getParameters());
       } catch (Exception e) {
         // Handle JWT creation failure, log it, or rethrow as needed
         throw new RuntimeException("Failed to create JWT token for user: " + user.getUsername(), e);
@@ -69,25 +70,18 @@ public class UserAuthService {
     return jwtSaveService.regenerateTokens(user, response);
   }
 
-  private Map<String, Object> getCredentials(UserAuthenticationForm userAuthForm) {
+  private void getCredentials(UserAuthenticationForm userAuthForm) {
     if (userAuthForm == null || userAuthForm.getAuthenticationMethodLk() == null) {
       throw new IllegalArgumentException("User authentication form and authentication method cannot be null");
     }
 
-    Map<String, Object> credentials = new HashMap<String, Object>();
-
     if (LkUserAuthenticationMethods.PASSWORD.equals(userAuthForm.getAuthenticationMethodLk())) {
-      credentials.put(AuthenticationKeys.PASSWORD.USERNAME, userAuthForm.getUsername());
-      credentials.put(AuthenticationKeys.PASSWORD.PASSWORD, userAuthForm.getSpecialToken());
-      return credentials;
+      userAuthForm.addParameter(AuthenticationKeys.PASSWORD.USERNAME, userAuthForm.getUsername());
+      userAuthForm.addParameter(AuthenticationKeys.PASSWORD.PASSWORD, userAuthForm.getSpecialToken());
     }
 
     if (LkUserAuthenticationMethods.GOOGLE_OAUTH2.equals(userAuthForm.getAuthenticationMethodLk())) {
-      credentials.put(AuthenticationKeys.GOOGLE_OAUTH2.ID_TOKEN, userAuthForm.getSpecialToken());
-      return credentials;
+      userAuthForm.addParameter(AuthenticationKeys.GOOGLE_OAUTH2.ID_TOKEN, userAuthForm.getSpecialToken());
     }
-
-    throw new IllegalArgumentException(
-        "Unsupported authentication method: " + userAuthForm.getAuthenticationMethodLk());
   }
 }
