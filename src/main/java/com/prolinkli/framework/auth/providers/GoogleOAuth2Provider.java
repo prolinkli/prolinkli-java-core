@@ -12,6 +12,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.prolinkli.core.app.Constants.AuthenticationKeys;
 import com.prolinkli.core.app.Constants.LkUserAuthenticationMethods;
 import com.prolinkli.core.app.components.user.model.User;
+import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.core.app.components.user.service.UserGetService;
 import com.prolinkli.framework.auth.model.AuthProvider;
 import com.prolinkli.framework.auth.util.OAuthUsernameUtil;
@@ -125,6 +126,10 @@ public class GoogleOAuth2Provider implements AuthProvider {
           + ". Please ensure the token is valid and not expired.");
     }
   }
+
+  public User getUserFromCredentials(UserAuthenticationForm userAuthFrom) {
+    throw new UnsupportedOperationException("Google OAuth2 does not support retrieving user from credentials directly. Not yet.");
+  } 
 
   /**
    * Helper method to extract user information from Google ID token

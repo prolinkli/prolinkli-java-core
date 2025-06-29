@@ -19,6 +19,10 @@ public class UserAuthenticationForm extends User {
   @Getter(value=AccessLevel.PRIVATE)
   private final Map<String, Object> parameters = new HashMap<>();
 
+  public final Map<String, Object> getParameters() {
+    return Map.copyOf(parameters);
+  }
+
   public void addParameter(String key, Object value) {
     if (key == null || value == null) {
       throw new IllegalArgumentException("Key and value cannot be null");

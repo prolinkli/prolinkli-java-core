@@ -42,6 +42,16 @@
       <columnOverride column="updated_at" isGeneratedAlways="true" />
     </table>
 
+
+		<table tableName="user_oauth_accounts"
+					 schema="public"
+					 domainObjectName="UserOAuthAccountDb">
+      <generatedKey column="id" sqlStatement="JDBC" identity="true" />
+      <columnOverride column="id" isGeneratedAlways="true" />
+      <columnOverride column="created_at" isGeneratedAlways="true" />
+      <columnOverride column="updated_at" isGeneratedAlways="true" />
+    </table>
+
     <!-- Example: generate for a table called 'users' -->
     <!--
 
@@ -61,6 +71,7 @@
 		<table tableName="jwt_tokens"
 					 schema="public"
 					 domainObjectName="JwtTokenDb" />
+
            
     -->
 

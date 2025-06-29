@@ -50,4 +50,17 @@ public interface AuthProvider {
    */
   void insertCredentialsForUser(User user, Map<String, Object> credentials);
 
+  /**
+   * Retrieves a user from the provided UserAuthenticationForm and credentials.
+   * This method is used to fetch the user 
+   * based on the authentication form and credentials.
+   *
+   * This is effectively a "read" method for the user, which means it allows providers to define
+   * how to retrieve a user based on the authentication form and credentials.
+   *
+   * We want to define this method in the AuthProvider interface so that each provider can implement
+   * methods of retrieving a user based on the authentication form and credentials (which may be ultimately different from one provider to another)
+   */
+  User getUserFromCredentials(UserAuthenticationForm userAuthForm);
+
 }

@@ -5,6 +5,7 @@ import java.util.Map;
 import com.prolinkli.core.app.Constants.AuthenticationKeys;
 import com.prolinkli.core.app.Constants.LkUserAuthenticationMethods;
 import com.prolinkli.core.app.components.user.model.User;
+import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.core.app.components.user.model.UserPassword;
 import com.prolinkli.core.app.components.user.service.UserGetService;
 import com.prolinkli.framework.auth.model.AuthProvider;
@@ -85,7 +86,22 @@ public class InternalAuthProvider implements AuthProvider {
 
     // Save the userPassword object to the database (not shown here)
     internalAuthService.insertCredentialsForUser(user.getId(), userPassword);
-
   }
+
+  @Override
+  public User getUserFromCredentials(UserAuthenticationForm userAuthForm) {
+
+    var credentials = userAuthForm.getParameters();
+    this.validateCredentials(credentials);
+
+    String username = credentials.get(AuthenticationKeys.PASSWORD.USERNAME).toString();
+
+    User user = userGetService.getUserByUsername(username);
+    if (user == null) {
+      throw new IllegalArgumentException("User not found for the provided username");
+    }
+
+    return user;
+  } 
 
 }
