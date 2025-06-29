@@ -1,7 +1,5 @@
 package com.prolinkli.framework.jwt.service;
 
-import java.security.Key;
-import java.util.Date;
 import java.util.Map;
 
 import com.prolinkli.core.app.Constants.Jwt;
@@ -22,7 +20,6 @@ import org.springframework.stereotype.Service;
 import com.prolinkli.framework.config.secrets.SecretsManager;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtCreateService {

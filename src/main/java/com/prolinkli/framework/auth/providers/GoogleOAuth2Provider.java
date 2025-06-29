@@ -22,6 +22,7 @@ import com.prolinkli.framework.auth.util.AuthValidationUtil;
 import com.prolinkli.framework.auth.util.OAuthUsernameUtil;
 import com.prolinkli.framework.config.secrets.SecretsManager;
 import com.prolinkli.framework.db.dao.Dao;
+import com.prolinkli.framework.exception.exceptions.model.ResourceNotFoundException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +76,7 @@ public class GoogleOAuth2Provider implements AuthProvider {
       // Check if user exists in your system
       User existingUser = userGetService.getUserByUsername(systemUsername);
       if (existingUser == null) {
-        throw new IllegalArgumentException("User not found. Please register first.");
+        throw new ResourceNotFoundException("User not found with username: " + systemUsername);
       }
 
 

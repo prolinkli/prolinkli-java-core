@@ -13,6 +13,8 @@ import com.prolinkli.framework.auth.model.AuthProvider;
 import com.prolinkli.framework.auth.service.InternalAuthService;
 import com.prolinkli.framework.auth.util.AuthValidationUtil;
 import com.prolinkli.framework.db.dao.Dao;
+import com.prolinkli.framework.exception.exceptions.model.InvalidCredentialsException;
+import com.prolinkli.framework.exception.exceptions.model.ResourceNotFoundException;
 import com.prolinkli.framework.hash.Hasher;
 
 import org.slf4j.Logger;
@@ -43,12 +45,12 @@ public class InternalAuthProvider implements AuthProvider {
     UserPassword user = userGetService
         .getUserWithPasswordByUsername(credentials.get(AuthenticationKeys.PASSWORD.USERNAME).toString());
     if (user == null) {
-      throw new IllegalArgumentException("User not found for the provided username");
+      throw new ResourceNotFoundException("User not found for the provided username");
     }
     String password = credentials.get(AuthenticationKeys.PASSWORD.PASSWORD).toString();
 
     if (!Hasher.verifyString(password, user.getPassword())) {
-      throw new IllegalArgumentException("Invalid password for the provided username");
+      throw new InvalidCredentialsException("Invalid password for the provided username");
     }
 
     return true;

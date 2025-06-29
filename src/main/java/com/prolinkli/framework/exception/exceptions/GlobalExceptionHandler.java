@@ -5,10 +5,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import com.prolinkli.framework.exception.exceptions.model.InvalidCredentialsException;
 import com.prolinkli.framework.exception.exceptions.model.ResourceNotFoundException;
 import com.prolinkli.framework.exception.response.model.ErrorResponse;
 
@@ -47,6 +49,19 @@ public class GlobalExceptionHandler {
             req.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler({ AuthorizationDeniedException.class, InvalidCredentialsException.class })
+    public ResponseEntity<ErrorResponse> handleAuthorizationDenied(AuthorizationDeniedException ex,
+                                                                   HttpServletRequest req) {
+        log.info("Authorization denied: {}", ex.getMessage());
+        ErrorResponse body = new ErrorResponse(
+            HttpStatus.FORBIDDEN.value(),
+            HttpStatus.FORBIDDEN.getReasonPhrase(),
+            ex.getMessage(),
+            req.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
