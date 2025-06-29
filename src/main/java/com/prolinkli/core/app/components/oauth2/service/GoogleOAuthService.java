@@ -9,23 +9,20 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeToken
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-import com.prolinkli.core.app.Constants.LkUserAuthenticationMethods;
 import com.prolinkli.core.app.Constants.OAuth2Providers;
 import com.prolinkli.core.app.Constants.OAuth2ProvidersLks;
 import com.prolinkli.framework.config.secrets.SecretsManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.view.RedirectView;
 
-import io.jsonwebtoken.lang.Arrays;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class GoogleOAuthService extends AbstractOAuthService {
 
   private static final String REDIRECT_URL = "http://localhost:8080/v1/api/auth/oauth2/google/callback";
-  private static final String LOGIN_ENDPOINT = "/v1/api/user/login/google";
+  private static final String LOGIN_ENDPOINT = "/v1/api/buildinfo";
 
   @Autowired
   private SecretsManager secretsManager;

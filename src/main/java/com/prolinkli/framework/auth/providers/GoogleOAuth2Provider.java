@@ -15,6 +15,7 @@ import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.core.app.components.user.service.UserGetService;
 import com.prolinkli.framework.auth.model.AuthProvider;
+import com.prolinkli.framework.auth.service.GoogleOAuth2Service;
 import com.prolinkli.framework.auth.util.OAuthUsernameUtil;
 import com.prolinkli.framework.config.secrets.SecretsManager;
 
@@ -29,6 +30,9 @@ public class GoogleOAuth2Provider implements AuthProvider {
 
   @Autowired
   private UserGetService userGetService;
+
+  @Autowired
+  private GoogleOAuth2Service googleOAuth2Service;
 
   private GoogleIdTokenVerifier verifier;
 
@@ -96,9 +100,28 @@ public class GoogleOAuth2Provider implements AuthProvider {
 
   @Override
   public void insertCredentialsForUser(User user, Map<String, Object> credentials) {
-    // This method is not applicable for Google OAuth2 as credentials are not stored
-    // in the same way as traditional username/password systems.
-    throw new UnsupportedOperationException("Google OAuth2 does not support inserting credentials directly. Not yet.");
+    this.validateCredentials(credentials);
+
+    String idToken = credentials.get(AuthenticationKeys.GOOGLE_OAUTH2.ID_TOKEN).toString();
+    try {
+      GoogleIdToken idTokenObj = verifyGoogleIdToken(idToken);
+      if (idTokenObj == null) {
+        throw new IllegalArgumentException("Invalid Google ID token - verification returned null");
+      }
+
+      GoogleIdToken.Payload payload = idTokenObj.getPayload();
+      String googleUserId = payload.getSubject();
+
+      // Insert the OAuth relationship into the database
+      googleOAuth2Service.insertUserOAuthRelationship(
+          Map.of(
+              "oAuthId", googleUserId,
+              "userId", user.getId()));
+
+    } catch (GeneralSecurityException | IOException e) {
+      throw new IllegalArgumentException("Failed to verify Google ID token: " + e.getMessage(), e);
+    }
+
   }
 
   private GoogleIdToken verifyGoogleIdToken(String idTokenString)
@@ -127,9 +150,21 @@ public class GoogleOAuth2Provider implements AuthProvider {
     }
   }
 
-  public User getUserFromCredentials(UserAuthenticationForm userAuthFrom) {
-    throw new UnsupportedOperationException("Google OAuth2 does not support retrieving user from credentials directly. Not yet.");
-  } 
+  @Override
+  public User getUserFromCredentials(UserAuthenticationForm userAuthForm) {
+    try {
+
+      var googleUserInfo = getGoogleUserInfo(userAuthForm.getSpecialToken());
+      if (googleUserInfo == null) {
+        throw new IllegalArgumentException("Failed to extract user information from Google ID token");
+      }
+
+      return googleOAuth2Service.getUserByOAuthId(googleUserInfo.getSubject());
+
+    } catch (GeneralSecurityException | IOException e) {
+      throw new IllegalArgumentException("Failed to get user from Google ID token: " + e.getMessage(), e);
+    }
+  }
 
   /**
    * Helper method to extract user information from Google ID token

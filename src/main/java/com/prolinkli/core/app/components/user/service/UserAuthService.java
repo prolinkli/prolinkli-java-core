@@ -46,7 +46,7 @@ public class UserAuthService {
     var authForm = this.authProviderRegistry.getProvider(userAuthForm.getAuthenticationMethodLk());
     // this method does all subsequent authentication checks (including null checks)
     if (authForm.authenticate(getCredentials(userAuthForm))) {
-      User user = userGetService.getUserByUsername(userAuthForm.getUsername());
+      User user = authForm.getUserFromCredentials(userAuthForm);
       // Consider checking if user is null and handle accordingly, but this shouldn't
       // happen if the authentication method is correct
       try {

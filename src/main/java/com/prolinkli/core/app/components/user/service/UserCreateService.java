@@ -74,14 +74,14 @@ public class UserCreateService {
       // Extract user information from Google ID token
       String idToken = user.getSpecialToken();
       var googleUserInfo = googleOAuth2Provider.getGoogleUserInfo(idToken);
-      
+
       if (googleUserInfo == null) {
         throw new IllegalArgumentException("Failed to extract user information from Google ID token");
       }
 
       String email = googleUserInfo.getEmail();
       String googleUserId = googleUserInfo.getSubject();
-      
+
       if (email == null || email.isEmpty() || googleUserId == null || googleUserId.isEmpty()) {
         throw new IllegalArgumentException("Google ID token does not contain required user information");
       }
@@ -111,13 +111,19 @@ public class UserCreateService {
 
       LOGGER.debug("Inserting OAuth user into database: {}", systemUsername);
       dao.insert(userDb);
-      
+
       // Verify that the insert was successful and ID was generated
       if (userDb.getId() == null) {
         throw new RuntimeException("Database insert failed - no ID was generated for user: " + systemUsername);
       }
-      
+
       user.setId(userDb.getId());
+
+      // insert credentials for the OAuth user
+      authProvider.insertCredentialsForUser(user, Map.of(
+          Constants.AuthenticationKeys.GOOGLE_OAUTH2.ID_TOKEN, idToken,
+          Constants.AuthenticationKeys.GOOGLE_OAUTH2.SUBJECT, googleUserId
+      ));
 
       // For OAuth users, we don't need to store credentials in the traditional way
       // The OAuth provider handles authentication
@@ -159,13 +165,12 @@ public class UserCreateService {
 
     LOGGER.debug("Inserting password user into database: {}", user.getUsername());
     dao.insert(userDb);
-    
+
     // Verify that the insert was successful and ID was generated
     if (userDb.getId() == null) {
       throw new RuntimeException("Database insert failed - no ID was generated for user: " + user.getUsername());
     }
-    
-    // TODO: implement mapper
+
     user.setId(userDb.getId());
 
     try {

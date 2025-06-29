@@ -60,6 +60,7 @@ public final class Constants {
 		public static final class GOOGLE_OAUTH2 {
 			public static final String CODE = "code";
 			public static final String STATE = "state";
+      public static final String SUBJECT = "sub";
 			public static final String ID_TOKEN = "id_token";
 			public static final String ACCESS_TOKEN = "access_token";
 		}
