@@ -24,9 +24,6 @@ public class GoogleOAuthService extends AbstractOAuthService {
   private static final String REDIRECT_URL = "http://localhost:8080/v1/api/auth/oauth2/google/callback";
   private static final String LOGIN_ENDPOINT = "/v1/api/buildinfo";
 
-  @Autowired
-  private SecretsManager secretsManager;
-
   @Override
   public String getProviderName() {
     return OAuth2ProvidersLks.GOOGLE;

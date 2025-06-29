@@ -20,6 +20,8 @@ public final class Constants {
 	public static final class LkUserAuthenticationMethods {
 		public static final String PASSWORD = "INTERNAL";
 		public static final String GOOGLE_OAUTH2 = "GOOGLE";
+    public static final String FACEBOOK_OAUTH2 = "FACEBOOK";
+    public static final String MICROSOFT_OAUTH2 = "MICROSOFT";
 	}
 
   public static final class OAuth2ProvidersLks {
