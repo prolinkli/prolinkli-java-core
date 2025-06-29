@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.prolinkli.framework.auth.model.AuthProvider;
-import com.prolinkli.framework.auth.providers.InternalAuthProvider;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;

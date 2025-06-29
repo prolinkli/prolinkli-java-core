@@ -12,7 +12,6 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.prolinkli.core.app.Constants;
 import com.prolinkli.core.app.Constants.AuthenticationKeys;
 import com.prolinkli.core.app.Constants.LkUserAuthenticationMethods;
-import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.core.app.components.user.service.UserGetService;
@@ -78,6 +77,8 @@ public class GoogleOAuth2Provider implements AuthProvider {
       if (existingUser == null) {
         throw new IllegalArgumentException("User not found. Please register first.");
       }
+
+
 
       return true;
 

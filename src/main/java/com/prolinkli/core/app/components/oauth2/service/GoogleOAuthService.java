@@ -11,9 +11,6 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.prolinkli.core.app.Constants.OAuth2Providers;
 import com.prolinkli.core.app.Constants.OAuth2ProvidersLks;
-import com.prolinkli.framework.config.secrets.SecretsManager;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletRequest;
