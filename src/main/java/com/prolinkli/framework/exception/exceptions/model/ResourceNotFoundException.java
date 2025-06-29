@@ -1,4 +1,4 @@
-package com.prolinkli.framework.exception.exceptions;
+package com.prolinkli.framework.exception.exceptions.model;
 
 
 import org.springframework.http.HttpStatus;

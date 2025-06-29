@@ -10,7 +10,7 @@ import com.prolinkli.core.app.db.model.generated.UserDbExample;
 import com.prolinkli.core.app.db.model.generated.UserPasswordDb;
 import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
-import com.prolinkli.framework.exception.exceptions.ResourceNotFoundException;
+import com.prolinkli.framework.exception.exceptions.model.ResourceNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

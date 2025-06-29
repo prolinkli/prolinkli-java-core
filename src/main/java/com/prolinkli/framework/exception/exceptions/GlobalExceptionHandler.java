@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import com.prolinkli.framework.exception.exceptions.model.ResourceNotFoundException;
 import com.prolinkli.framework.exception.response.model.ErrorResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
