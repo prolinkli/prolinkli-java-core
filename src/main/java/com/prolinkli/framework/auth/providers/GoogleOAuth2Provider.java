@@ -74,12 +74,10 @@ public class GoogleOAuth2Provider implements AuthProvider {
       }
 
       // Check if user exists in your system
-      User existingUser = userGetService.getUserByUsername(systemUsername);
+      User existingUser = googleOAuth2Service.getUserByOAuthId(googleUserId);
       if (existingUser == null) {
-        throw new ResourceNotFoundException("User not found with username: " + systemUsername);
+        throw new ResourceNotFoundException("User not found with oauthId: " + systemUsername);
       }
-
-
 
       return true;
 
@@ -87,7 +85,7 @@ public class GoogleOAuth2Provider implements AuthProvider {
       throw new IllegalArgumentException("Failed to verify Google ID token: " + e.getMessage(), e);
     } catch (IllegalArgumentException e) {
       // Re-throw IllegalArgumentException with more context
-      throw new IllegalArgumentException("Google authentication failed: " + e.getMessage(), e);
+      throw new RuntimeException("Google authentication failed: " + e.getMessage(), e);
     }
   }
 

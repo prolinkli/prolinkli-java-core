@@ -75,12 +75,12 @@ public class UserAuthService {
       throw new IllegalArgumentException("User authentication form and authentication method cannot be null");
     }
 
-    if (LkUserAuthenticationMethods.PASSWORD.equals(userAuthForm.getAuthenticationMethodLk())) {
+    if (LkUserAuthenticationMethods.PASSWORD.equalsIgnoreCase(userAuthForm.getAuthenticationMethodLk())) {
       userAuthForm.addParameter(AuthenticationKeys.PASSWORD.USERNAME, userAuthForm.getUsername());
       userAuthForm.addParameter(AuthenticationKeys.PASSWORD.PASSWORD, userAuthForm.getSpecialToken());
     }
 
-    if (LkUserAuthenticationMethods.GOOGLE_OAUTH2.equals(userAuthForm.getAuthenticationMethodLk())) {
+    if (LkUserAuthenticationMethods.GOOGLE_OAUTH2.equalsIgnoreCase(userAuthForm.getAuthenticationMethodLk())) {
       userAuthForm.addParameter(AuthenticationKeys.GOOGLE_OAUTH2.ID_TOKEN, userAuthForm.getSpecialToken());
     }
   }

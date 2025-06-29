@@ -17,6 +17,7 @@ import com.prolinkli.framework.auth.util.AuthValidationUtil;
 import com.prolinkli.framework.auth.util.OAuthUsernameUtil;
 import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
+import com.prolinkli.framework.exception.exceptions.model.ResourceAlreadyExists;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +68,13 @@ public class UserCreateService {
       authProvider.createUser(user, dao);
       return userAuthService.login(user);
 
+    } catch (ResourceAlreadyExists e) {
+
+      // If the user already exists, we throw a ResourceAlreadyExists exception.
+      throw new ResourceAlreadyExists("User already exists with username: " + user.getUsername());
+
     } catch (Exception e) {
+
       LOGGER.error("Failed to create user: {}:{}", user.getId(), user.getUsername(), e);
       // Rollback the user creation if any error occurs.
       rollback(user);
@@ -85,10 +92,16 @@ public class UserCreateService {
   }
 
   private void rollback(User user) {
-    if (user != null && user.getId() != null) {
+
+    if (user == null) {
+      LOGGER.warn("No user to rollback");
+      return;
+    }
+
+    if (user.getId() != null) {
       LOGGER.warn("Rolling back user creation for user: {}:{}", user.getUsername(), user.getId());
       dao.delete(user.getId());
-    } else if (user != null && user.getUsername() != null) {
+    } else if (user.getUsername() != null) {
       LOGGER.warn("Rolling back user creation for user: {}", user.getUsername());
       UserDbExample example = new UserDbExample();
       example.createCriteria().andUsernameEqualTo(user.getUsername());
@@ -96,6 +109,7 @@ public class UserCreateService {
     } else {
       LOGGER.warn("No user to rollback");
     }
+
   }
 
 }

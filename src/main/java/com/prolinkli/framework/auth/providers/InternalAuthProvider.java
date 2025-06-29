@@ -14,6 +14,7 @@ import com.prolinkli.framework.auth.service.InternalAuthService;
 import com.prolinkli.framework.auth.util.AuthValidationUtil;
 import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.exception.exceptions.model.InvalidCredentialsException;
+import com.prolinkli.framework.exception.exceptions.model.ResourceAlreadyExists;
 import com.prolinkli.framework.exception.exceptions.model.ResourceNotFoundException;
 import com.prolinkli.framework.hash.Hasher;
 
@@ -66,7 +67,7 @@ public class InternalAuthProvider implements AuthProvider {
     }
 
     if (foundUser != null) {
-      throw new IllegalArgumentException("User already exists with username: " + user.getUsername());
+      throw new ResourceAlreadyExists("User already exists with username: " + user.getUsername());
     }
 
     AuthValidationUtil.validateUserName(user.getUsername());
