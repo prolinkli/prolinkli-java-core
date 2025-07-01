@@ -1,4 +1,4 @@
-package com.prolinkli.core.app.components.role.model;
+package com.prolinkli.core.app.components.permission.model;
 
 import lombok.Data;
 import java.time.LocalDateTime;
