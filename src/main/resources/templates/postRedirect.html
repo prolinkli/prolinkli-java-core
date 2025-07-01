@@ -49,6 +49,24 @@
         </div>
     </div>
     
+    <!-- User Already Exists State -->
+    <div id="userExistsContent" class="auth-container" style="display: none;">
+        <div class="auth-card">
+            <div class="exists-content">
+                <div class="exists-icon">👤</div>
+                <h2>Account Already Exists</h2>
+                <p>An account with this information already exists in our system.</p>
+                <div class="user-info" id="existingUserInfo" style="display: none;">
+                    <p><strong>Email:</strong> <span id="existingUserEmail"></span></p>
+                </div>
+                <div class="action-buttons">
+                    <button onclick="handleTryLogin()" class="login-btn">Try Login Instead</button>
+                    <button onclick="handleCancel()" class="cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Footer -->
     <div class="footer">
         <p>&copy; 2025 Prolinkli. All rights reserved.</p>
@@ -139,7 +157,13 @@
                 } else {
                     const errorData = await response.json().catch(() => ({}));
                     const errorMessage = errorData.message || 'Registration failed';
-                    showError(`Failed to create account: ${errorMessage}`);
+                    
+                    // Check if this is a "user already exists" error (409 Conflict)
+                    if (response.status === 409 || isUserExistsError(errorMessage)) {
+                        showUserExists();
+                    } else {
+                        showError(`Failed to create account: ${errorMessage}`);
+                    }
                 }
             } catch (error) {
                 console.error('Registration error:', error);
@@ -169,6 +193,18 @@
             
             const lowerMessage = errorMessage.toLowerCase();
             return userNotFoundPhrases.some(phrase => lowerMessage.includes(phrase));
+        }
+        
+        function isUserExistsError(errorMessage) {
+            const userExistsPhrases = [
+                'user already exists',
+                'username already exists',
+                'account already exists',
+                'already registered'
+            ];
+            
+            const lowerMessage = errorMessage.toLowerCase();
+            return userExistsPhrases.some(phrase => lowerMessage.includes(phrase));
         }
         
         async function extractUserInfo() {
@@ -222,10 +258,22 @@
             document.getElementById('userNotFoundContent').style.display = 'flex';
         }
         
+        function showUserExists() {
+            hideAllStates();
+            
+            if (appState.userEmail) {
+                document.getElementById('existingUserEmail').textContent = appState.userEmail;
+                document.getElementById('existingUserInfo').style.display = 'block';
+            }
+            
+            document.getElementById('userExistsContent').style.display = 'flex';
+        }
+        
         function hideAllStates() {
             document.getElementById('loadingContent').style.display = 'none';
             document.getElementById('errorContent').style.display = 'none';
             document.getElementById('userNotFoundContent').style.display = 'none';
+            document.getElementById('userExistsContent').style.display = 'none';
         }
         
         // Event handlers
@@ -242,6 +290,11 @@
         function handleCancel() {
             // Redirect to home page or login page
             window.location.href = '/';
+        }
+        
+        function handleTryLogin() {
+            // Attempt login again since the user already exists
+            attemptLogin();
         }
         
     </script>
@@ -342,6 +395,24 @@
             line-height: 1.6;
         }
         
+        /* User exists styles */
+        .exists-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .exists-content h2 {
+            color: #f39c12;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .exists-content p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
         .user-info {
             background: #f8f9fa;
             border-radius: 8px;
@@ -362,7 +433,7 @@
             margin-top: 25px;
         }
         
-        .create-btn, .retry-btn {
+        .create-btn, .retry-btn, .login-btn {
             flex: 1;
             background: #667eea;
             color: white;
@@ -375,7 +446,7 @@
             transition: all 0.2s;
         }
         
-        .create-btn:hover, .retry-btn:hover {
+        .create-btn:hover, .retry-btn:hover, .login-btn:hover {
             background: #5a67d8;
             transform: translateY(-1px);
         }

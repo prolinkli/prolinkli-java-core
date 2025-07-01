@@ -13,6 +13,7 @@ import com.prolinkli.framework.jwt.service.JwtCreateService;
 import com.prolinkli.framework.jwt.service.JwtSaveService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -64,7 +65,7 @@ public class UserAuthService {
 
   public AuthorizedUser refresh(AuthorizedUser user, HttpServletResponse response) {
     if (user == null) {
-      throw new IllegalStateException("User not authenticated");
+      throw new AuthorizationDeniedException("User not authenticated");
     }
 
     return jwtSaveService.regenerateTokens(user, response);

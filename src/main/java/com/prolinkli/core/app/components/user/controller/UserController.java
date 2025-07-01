@@ -1,5 +1,6 @@
 package com.prolinkli.core.app.components.user.controller;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import com.prolinkli.core.app.components.user.service.UserCreateService;
 import com.prolinkli.framework.auth.model.CurrentUser;
 import com.prolinkli.framework.cookies.service.CookieSaveService;
 import com.prolinkli.framework.cookies.util.JwtCookieUtil;
+import com.prolinkli.framework.exception.response.model.ResponseObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -136,6 +138,22 @@ class UserController {
       throw new IllegalStateException("User not authenticated");
     }
     return AuthorizedUser.strip(user);
+  }
+
+  /**
+   * Logout endpoint that clears authentication cookies.
+   * 
+   * @param response HttpServletResponse to clear cookies.
+   * @return Success message.
+   */
+  @RequestMapping("/logout")
+  public ResponseObject<Void> logout(HttpServletResponse response) {
+    // Clear authentication cookies
+    cookieSaveService.saveCookies(
+        JwtCookieUtil.createClearAuthCookies(),
+        response);
+
+    return new ResponseObject<>(LocalDateTime.now(), "SUCCESS", "Logged out successfully", null);
   }
 
 }

@@ -10,6 +10,7 @@ import com.prolinkli.core.app.db.model.generated.UserOAuthAccountDbExample;
 import com.prolinkli.core.app.db.model.generated.UserOAuthAccountDbKey;
 import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
+import com.prolinkli.framework.exception.exceptions.model.ResourceNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,7 +41,7 @@ public class GoogleOAuth2Service {
 
     UserOAuthAccountDb userOAuthAccountDb = dao.select(example).stream()
         .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("User not found with OAuth ID: " + oAuthId));
+        .orElseThrow(() -> new ResourceNotFoundException("User not found with OAuth ID: " + oAuthId));
 
     return userGetService.getUserById(userOAuthAccountDb.getUserId());
 
