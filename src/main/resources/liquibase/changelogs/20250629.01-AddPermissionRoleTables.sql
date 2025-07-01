@@ -124,6 +124,6 @@ INSERT INTO lk_permissions (permission_code, permission_name, permission_level, 
 
 -- Insert basic roles
 INSERT INTO roles (role_name, role_description, disabled_flg, is_system_role) VALUES
-('USER', 'Standard user with basic access', FALSE, TRUE),
-('BUSINESS', 'Business user with elevated permissions', FALSE, TRUE),
-('SYSTEM_ADMIN', 'System Administrator with full access', FALSE, TRUE); 
+('CONSUMER', 'Standard consumer with basic access', FALSE, TRUE),
+('PROFESSIONAL', 'Professional user with elevated permissions', FALSE, TRUE),
+('SUPER_USER', 'Super User with full access', FALSE, TRUE); 

@@ -62,6 +62,18 @@
            schema="public"
            domainObjectName="JwtTokenDb" />
 
+    <table tableName="lk_user_authentication_methods"
+           schema="public"
+           domainObjectName="LkUserAuthenticationMethodDb" />
+
+    <table tableName="user_passwords"
+           schema="public"
+           domainObjectName="UserPasswordDb" />
+
+    <table tableName="build_info"
+           schema="public"
+           domainObjectName="BuildInfoDb" />
+
     <!-- Permission and Role Management Tables -->
     <table tableName="lk_permissions"
            schema="public"
