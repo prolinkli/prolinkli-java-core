@@ -61,12 +61,44 @@ class UserController {
   }
 
   /**
-   * Google OAuth2 login endpoint.
-   * Frontend sends the Google ID token received from Google OAuth2 flow.
+   * Google OAuth2 login endpoint for authenticating users with Google ID tokens.
    * 
-   * @param request  Map containing the Google ID token
-   * @param response HttpServletResponse to set cookies.
-   * @return AuthorizedUser object containing user details and auth token.
+   * @param request Map containing the Google ID token under "idToken" key
+   * @param response HttpServletResponse to set authentication cookies
+   * @return AuthorizedUser object containing user details and auth token
+   * @throws IllegalArgumentException if Google ID token is missing or empty
+   * 
+   * @documentation-pr-rule.mdc
+   * 
+   * This endpoint handles Google OAuth2 authentication by:
+   * 1. Extracting Google ID token from request body
+   * 2. Validating ID token presence and format
+   * 3. Creating UserAuthenticationForm with GOOGLE_OAUTH2 method
+   * 4. Delegating to UserAuthService for authentication processing
+   * 5. Setting secure authentication cookies in response
+   * 6. Returning authenticated user information
+   * 
+   * Expected request format:
+   * ```json
+   * {
+   *   "idToken": "eyJhbGciOiJSUzI1NiIs..."
+   * }
+   * ```
+   * 
+   * The ID token should be obtained from Google's OAuth2 flow and contain
+   * verified user profile information. This endpoint only authenticates
+   * existing users - new user registration is handled by the /register endpoint.
+   * 
+   * Security features:
+   * - ID token verification against Google's public keys
+   * - Secure HTTP-only authentication cookies
+   * - CSRF protection via cookie settings
+   * - Automatic token expiration handling
+   * 
+   * Response includes:
+   * - User profile information
+   * - JWT access and refresh tokens (in cookies)
+   * - Authentication status and permissions
    */
   @PostMapping("/login/google")
   public AuthorizedUser loginWithGoogle(@RequestBody Map<String, String> request, HttpServletResponse response) {

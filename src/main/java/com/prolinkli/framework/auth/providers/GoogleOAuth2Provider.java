@@ -29,6 +29,38 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/**
+ * Google OAuth2 authentication provider implementation.
+ * 
+ * @documentation-pr-rule.mdc
+ * 
+ * This authentication provider handles Google OAuth2 integration for user authentication
+ * and account creation. It implements the AuthProvider interface to provide Google-specific
+ * authentication logic within the unified authentication framework.
+ * 
+ * Key features:
+ * - Google ID token verification using Google's official client libraries
+ * - Automatic user account creation from Google profile information
+ * - Secure username generation from email and Google user ID
+ * - Integration with internal user management and OAuth account linking
+ * - Comprehensive error handling and validation
+ * 
+ * Security considerations:
+ * - Verifies ID tokens against Google's public keys
+ * - Validates token audience to prevent token substitution attacks
+ * - Enforces proper JWT token format validation
+ * - Uses secure random username generation for OAuth users
+ * 
+ * Dependencies:
+ * - SecretsManager: For Google OAuth2 client credentials
+ * - UserGetService: For existing user lookup operations
+ * - GoogleOAuth2Service: For OAuth account relationship management
+ * - AuthValidationUtil: For username validation rules
+ * - OAuthUsernameUtil: For secure username generation
+ * 
+ * @author ProLinkLi Development Team
+ * @since 1.0
+ */
 @Component
 public class GoogleOAuth2Provider implements AuthProvider {
 
@@ -43,13 +75,49 @@ public class GoogleOAuth2Provider implements AuthProvider {
   @Autowired
   private GoogleOAuth2Service googleOAuth2Service;
 
+  /**
+   * Google ID token verifier instance for token validation.
+   * Lazily initialized on first use with proper audience configuration.
+   */
   private GoogleIdTokenVerifier verifier;
 
+  /**
+   * Returns the Google OAuth2 provider name identifier.
+   * 
+   * @return "GOOGLE" as defined in LkUserAuthenticationMethods.GOOGLE_OAUTH2
+   * 
+   * @documentation-pr-rule.mdc
+   * This identifier is used throughout the system for:
+   * - Authentication method lookup and routing
+   * - Database authentication method storage
+   * - Provider-specific logic branching
+   */
   @Override
   public String getProviderName() {
     return LkUserAuthenticationMethods.GOOGLE_OAUTH2;
   }
 
+  /**
+   * Authenticates a user using Google OAuth2 ID token.
+   * 
+   * @param credentials Map containing Google ID token under AuthenticationKeys.GOOGLE_OAUTH2.ID_TOKEN
+   * @return Boolean true if authentication succeeds and user exists in system
+   * @throws IllegalArgumentException if credentials are invalid or ID token verification fails
+   * @throws ResourceNotFoundException if user does not exist in the system
+   * @throws RuntimeException if Google authentication fails due to security exceptions
+   * 
+   * @documentation-pr-rule.mdc
+   * Authentication process:
+   * 1. Validates credentials contain required ID token
+   * 2. Verifies ID token signature and audience using Google's public keys
+   * 3. Extracts user email and Google user ID from token payload
+   * 4. Generates system username using OAuthUsernameUtil
+   * 5. Looks up existing user by Google OAuth ID
+   * 6. Returns true if user exists, throws ResourceNotFoundException if not
+   * 
+   * This method only authenticates existing users. New user creation is handled
+   * separately by the createUser method.
+   */
   @Override
   public Boolean authenticate(Map<String, Object> credentials) {
     this.validateCredentials(credentials);
@@ -89,6 +157,28 @@ public class GoogleOAuth2Provider implements AuthProvider {
     }
   }
 
+  /**
+   * Creates a new user account from Google OAuth2 authentication.
+   * 
+   * @param user UserAuthenticationForm containing Google ID token in specialToken field
+   * @param dao Database access object for user creation operations
+   * @throws IllegalArgumentException if ID token is invalid or user already exists
+   * @throws RuntimeException if user creation fails due to database or validation errors
+   * 
+   * @documentation-pr-rule.mdc
+   * User creation process:
+   * 1. Extracts user information from Google ID token payload
+   * 2. Validates required fields (email, Google user ID) are present
+   * 3. Generates unique system username using email and OAuth ID
+   * 4. Checks for existing users to prevent duplicates
+   * 5. Validates username against system requirements
+   * 6. Creates user record in database with OAuth authentication method
+   * 7. Links Google OAuth account to newly created user
+   * 8. Logs successful creation with user details
+   * 
+   * Username generation ensures uniqueness and compliance with system constraints
+   * while maintaining traceability to the original Google account.
+   */
   @Override
   public void createUser(UserAuthenticationForm user, Dao<UserDb, Long> dao) {
     try {
@@ -157,6 +247,21 @@ public class GoogleOAuth2Provider implements AuthProvider {
     }
   }
 
+  /**
+   * Validates OAuth2 credentials contain required Google ID token.
+   * 
+   * @param credentials Map of authentication credentials
+   * @throws IllegalArgumentException if credentials are null, empty, or missing ID token
+   * 
+   * @documentation-pr-rule.mdc
+   * Validation checks:
+   * - Credentials map is not null or empty
+   * - Contains AuthenticationKeys.GOOGLE_OAUTH2.ID_TOKEN key
+   * - ID token value is not null or empty string
+   * 
+   * This method provides early validation to ensure downstream processing
+   * receives properly formatted credentials.
+   */
   @Override
   public void validateCredentials(Map<String, Object> credentials) {
     if (credentials == null || credentials.isEmpty()) {
