@@ -42,6 +42,7 @@ public class JwtCookieUtil {
 
     Cookie userIdCookie = new Cookie(Cookies.Authentication.USER_ID, "");
     userIdCookie.setPath("/");
+    userIdCookie.setHttpOnly(true);
     userIdCookie.setMaxAge(0);
 
     return List.of(accessTokenCookie, refreshTokenCookie, userIdCookie);
