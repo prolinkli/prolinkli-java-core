@@ -108,6 +108,7 @@ class UserController {
    *                            - JWT access and refresh tokens (in cookies)
    *                            - Authentication status and permissions
    */
+  //TODO: add {authProvider} to the path 
   @PostMapping("/login/google")
   public AuthorizedUser loginWithGoogle(@RequestBody Map<String, String> request, HttpServletResponse response) {
     String idToken = request.get("idToken");
