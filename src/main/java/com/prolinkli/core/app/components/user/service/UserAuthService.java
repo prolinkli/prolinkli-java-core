@@ -97,11 +97,12 @@ public class UserAuthService {
       throw new IllegalArgumentException("Special token cannot be null");
     }
 
-    if (userAuthForm.getUsername() == null) {
-      throw new IllegalArgumentException("Username cannot be null");
-    }
-
     if (LkUserAuthenticationMethods.PASSWORD.equalsIgnoreCase(userAuthForm.getAuthenticationMethodLk())) {
+
+      if (userAuthForm.getUsername() == null) {
+        throw new IllegalArgumentException("Username cannot be null");
+      }
+
       userAuthForm.addParameter(AuthenticationKeys.PASSWORD.USERNAME, userAuthForm.getUsername());
       userAuthForm.addParameter(AuthenticationKeys.PASSWORD.PASSWORD, userAuthForm.getSpecialToken());
     }

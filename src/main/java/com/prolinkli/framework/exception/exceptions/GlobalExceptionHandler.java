@@ -54,6 +54,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler({ IllegalArgumentException.class, IllegalStateException.class })
   public ResponseEntity<ErrorResponse> handleBadRequest(RuntimeException ex,
       HttpServletRequest req) {
+    log.info("Illegal argument or state: {}", ex.getMessage(), ex);
     log.info("Bad request: {}", ex.getMessage());
     ErrorResponse body = new ErrorResponse(
         HttpStatus.BAD_REQUEST.value(),
