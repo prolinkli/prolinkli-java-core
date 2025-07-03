@@ -63,6 +63,21 @@ public class UserAuthService {
     return null;
   }
 
+  public AuthorizedUser logout(AuthorizedUser user) {
+
+    if (user == null) {
+      throw new AuthorizationDeniedException("User not authenticated");
+    }
+
+    if (user.getAuthToken() == null) {
+      throw new AuthorizationDeniedException("User authentication token is missing");
+    }
+
+    // Invalidate the JWT token or perform any necessary cleanup
+    jwtSaveService.disposeTokensTransactional(user.getAuthToken());
+    return user;
+  }
+
   public AuthorizedUser refresh(AuthorizedUser user, HttpServletResponse response) {
     if (user == null) {
       throw new AuthorizationDeniedException("User not authenticated");
