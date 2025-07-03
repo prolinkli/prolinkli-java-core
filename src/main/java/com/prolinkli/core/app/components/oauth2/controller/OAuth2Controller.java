@@ -146,7 +146,12 @@ public class OAuth2Controller {
    * for unsupported or misconfigured OAuth2 providers.
    */
   private AbstractOAuthService getOAuth2Service(String id) {
-    AbstractOAuthService svc = oauthServices.getOrDefault(id, null);
+
+    if (id == null || id.trim().isEmpty()) {
+      throw new IllegalArgumentException("OAuth2 provider ID cannot be null or empty");
+    }
+
+    AbstractOAuthService svc = oauthServices.getOrDefault(id.toLowerCase(), null);
     if (svc == null) {
       throw new IllegalArgumentException("OAuth2 provider not found: " + id);
     }
