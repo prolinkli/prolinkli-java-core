@@ -1,5 +1,5 @@
 -- liquibase formatted sql
--- changeset kerdogan:AddPermissionRoleTables splitStatements:false
+-- changeset cbaxendale:AddPermissionRoleTables splitStatements:false
 
 -- Create lk_permissions table
 select create_table(
