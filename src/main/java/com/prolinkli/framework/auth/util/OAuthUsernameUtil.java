@@ -65,7 +65,12 @@ public class OAuthUsernameUtil {
     String normalizedEmail = email.split("@")[0]; // Use the part before '@' for username
     normalizedEmail = normalizedEmail.toLowerCase().replaceAll("[^a-z0-9]", "");
 
-    String truncatedOauthId = oauthId.replaceAll("[^a-z0-9]", "").toLowerCase().substring(0,
+    String truncatedOauthId = oauthId.replaceAll("[^a-z0-9]", "").toLowerCase();
+    if (truncatedOauthId.isBlank()) {
+      throw new IllegalArgumentException("OAuth ID must not be empty or contain only special characters");
+    }
+
+    truncatedOauthId = truncatedOauthId.substring(0,
         Math.min(oauthId.length(), 10));
 
     StringBuilder emailBuilder = new StringBuilder(normalizedEmail);
