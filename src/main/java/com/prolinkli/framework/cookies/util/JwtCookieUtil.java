@@ -1,8 +1,10 @@
 package com.prolinkli.framework.cookies.util;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.prolinkli.core.app.Constants.Cookies;
+import com.prolinkli.framework.config.secrets.SecretsManager;
 import com.prolinkli.framework.jwt.model.AuthToken;
 
 import jakarta.servlet.http.Cookie;
@@ -15,17 +17,28 @@ public class JwtCookieUtil {
     }
 
     Cookie accessTokenCookie = new Cookie(Cookies.Authentication.ACCESS_TOKEN, authToken.getAccessToken());
-    accessTokenCookie.setPath("/"); // Make available to all paths
-    accessTokenCookie.setHttpOnly(true); // Security: prevent XSS access
-
     Cookie refreshTokenCookie = new Cookie(Cookies.Authentication.REFRESH_TOKEN, authToken.getRefreshToken());
-    refreshTokenCookie.setPath("/");
-    refreshTokenCookie.setHttpOnly(true);
-
     Cookie userIdCookie = new Cookie(Cookies.Authentication.USER_ID, authToken.getId().toString());
-    userIdCookie.setPath("/");
 
-    return List.of(accessTokenCookie, refreshTokenCookie, userIdCookie);
+    List<Cookie> cookies = List.of(accessTokenCookie, refreshTokenCookie, userIdCookie);
+    cookies.forEach(cookie -> {
+      cookie.setPath("/");
+      cookie.setHttpOnly(true); // Set HttpOnly to prevent client-side access
+      cookie.setSecure(true); // Set Secure if using HTTPS
+    });
+
+    return cookies;
+  }
+
+  public static List<Cookie> setMaxAgeForAuthCookies(List<Cookie> cookies, SecretsManager secretsManager) {
+    if (cookies == null || cookies.isEmpty()) {
+      throw new IllegalArgumentException("Cookies list cannot be null or empty");
+    }
+
+    //TODO: make this more configurable for each field
+    cookies.forEach(cookie -> cookie.setMaxAge(secretsManager.getJwtExpirationHours()));
+
+    return cookies;
   }
 
   public static List<Cookie> createClearAuthCookies() {
