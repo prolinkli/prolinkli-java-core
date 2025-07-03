@@ -3,11 +3,9 @@ package com.prolinkli.core.app.components.user.service;
 import java.util.List;
 
 import com.prolinkli.core.app.components.user.model.AuthorizedUser;
-import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.core.app.db.model.generated.UserDb;
 import com.prolinkli.framework.auth.model.AuthProvider;
-import com.prolinkli.framework.auth.providers.GoogleOAuth2Provider;
 import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
 import com.prolinkli.framework.exception.exceptions.model.ResourceAlreadyExists;
