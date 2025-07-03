@@ -30,6 +30,9 @@ package com.prolinkli.framework.auth.util;
  */
 public class OAuthUsernameUtil {
 
+  private final static Integer MAX_OAUTH_ID_LENGTH = 10;
+  private final static Integer MAX_USERNAME_LENGTH = 30;
+
   /**
    * Generates a unique username from OAuth user email and OAuth ID.
    * 
@@ -71,14 +74,14 @@ public class OAuthUsernameUtil {
     }
 
     truncatedOauthId = truncatedOauthId.substring(0,
-        Math.min(oauthId.length(), 10));
+        Math.min(oauthId.length(), MAX_OAUTH_ID_LENGTH));
 
     StringBuilder emailBuilder = new StringBuilder(normalizedEmail);
     StringBuilder oauthIdBuilder = new StringBuilder(truncatedOauthId);
 
     int lastTruncated = 0b0000;
     // Truncate to a maximum length of the email necessary
-    while ((emailBuilder.length() + oauthIdBuilder.length()) > 30) {
+    while ((emailBuilder.length() + oauthIdBuilder.length()) > MAX_USERNAME_LENGTH) {
 
       if ((lastTruncated & 0b0001) == 0) {
         emailBuilder.delete(emailBuilder.length() - 1, emailBuilder.length());
