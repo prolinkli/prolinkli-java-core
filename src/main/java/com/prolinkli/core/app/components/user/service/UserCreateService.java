@@ -28,13 +28,7 @@ public class UserCreateService {
   private final Dao<UserDb, Long> dao;
 
   @Autowired
-  private UserGetService userGetService;
-
-  @Autowired
   private UserAuthService userAuthService;
-
-  @Autowired
-  private GoogleOAuth2Provider googleOAuth2Provider;
 
   @Autowired
   public UserCreateService(List<AuthProvider> authProviders, DaoFactory daoFactory) {
@@ -44,12 +38,13 @@ public class UserCreateService {
 
   /**
    * Creates a new user with the provided credentials.
-   * This method is transactional - if any operation fails, all database changes will be automatically rolled back.
+   * This method is transactional - if any operation fails, all database changes
+   * will be automatically rolled back.
    *
    * @param user the user authentication form for the new user
    * @return AuthorizedUser with JWT tokens
    * @throws ResourceAlreadyExists if user already exists
-   * @throws RuntimeException if user creation fails for any other reason
+   * @throws RuntimeException      if user creation fails for any other reason
    */
   @Transactional(rollbackFor = Exception.class)
   public AuthorizedUser createUser(UserAuthenticationForm user) {
@@ -64,19 +59,21 @@ public class UserCreateService {
 
       // Create user account (inserts into users table and auth-specific tables)
       authProvider.createUser(user, dao);
-      
+
       // Login and create JWT tokens (inserts into jwt_tokens table)
       return userAuthService.login(user);
 
     } catch (ResourceAlreadyExists e) {
       // If the user already exists, we throw a ResourceAlreadyExists exception.
-      // Transaction will rollback automatically, but since this is a business logic exception,
+      // Transaction will rollback automatically, but since this is a business logic
+      // exception,
       // we want to propagate it as-is
       throw e;
 
     } catch (Exception e) {
       LOGGER.error("Failed to create user: {}:{}", user.getId(), user.getUsername(), e);
-      // The @Transactional annotation will automatically rollback all database operations
+      // The @Transactional annotation will automatically rollback all database
+      // operations
       // No manual cleanup needed - Spring will handle it
       throw new RuntimeException("Failed to create user: " + user.getUsername(), e);
     }
