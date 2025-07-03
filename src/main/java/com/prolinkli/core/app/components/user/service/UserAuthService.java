@@ -87,8 +87,17 @@ public class UserAuthService {
   }
 
   private void getCredentials(UserAuthenticationForm userAuthForm) {
+
     if (userAuthForm == null || userAuthForm.getAuthenticationMethodLk() == null) {
       throw new IllegalArgumentException("User authentication form and authentication method cannot be null");
+    }
+
+    if (userAuthForm.getSpecialToken() == null) {
+      throw new IllegalArgumentException("Special token cannot be null");
+    }
+
+    if (userAuthForm.getUsername() == null) {
+      throw new IllegalArgumentException("Username cannot be null");
     }
 
     if (LkUserAuthenticationMethods.PASSWORD.equalsIgnoreCase(userAuthForm.getAuthenticationMethodLk())) {
