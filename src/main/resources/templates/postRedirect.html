@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Authentication</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading State -->
+    <div id="loadingContent" class="auth-container">
+        <div class="auth-card">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <h2>Authenticating...</h2>
+                <p>Please wait while we process your login</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Error State -->
+    <div id="errorContent" class="auth-container" style="display: none;">
+        <div class="auth-card">
+            <div class="error-content">
+                <div class="error-icon">⚠️</div>
+                <h2>Authentication Error</h2>
+                <p id="errorMessage">An error occurred during authentication.</p>
+                <button onclick="handleRetry()" class="retry-btn">Try Again</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Not Found State -->
+    <div id="userNotFoundContent" class="auth-container" style="display: none;">
+        <div class="auth-card">
+            <div class="signup-content">
+                <div class="welcome-icon">👋</div>
+                <h2>Welcome to Prolinkli!</h2>
+                <p>It looks like this is your first time here. Would you like to create an account?</p>
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <p><strong>Email:</strong> <span id="userEmail"></span></p>
+                </div>
+                <div class="action-buttons">
+                    <button onclick="handleCreateAccount()" class="create-btn">Create Account</button>
+                    <button onclick="handleCancel()" class="cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Already Exists State -->
+    <div id="userExistsContent" class="auth-container" style="display: none;">
+        <div class="auth-card">
+            <div class="exists-content">
+                <div class="exists-icon">👤</div>
+                <h2>Account Already Exists</h2>
+                <p>An account with this information already exists in our system.</p>
+                <div class="user-info" id="existingUserInfo" style="display: none;">
+                    <p><strong>Email:</strong> <span id="existingUserEmail"></span></p>
+                </div>
+                <div class="action-buttons">
+                    <button onclick="handleTryLogin()" class="login-btn">Try Login Instead</button>
+                    <button onclick="handleCancel()" class="cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2025 Prolinkli. All rights reserved.</p>
+    </div>
+    
+    <script th:inline="javascript">
+        // Configuration from Thymeleaf
+        const config = {
+            idToken: /*[[${idToken}]]*/ '',
+            provider: /*[[${provider}]]*/ '',
+            redirectUrl: /*[[${redirectUrl}]]*/ ''
+        };
+        
+        // Application state
+        let appState = {
+            userEmail: null,
+            isProcessing: false
+        };
+        
+        // API endpoints
+        const endpoints = {
+            login: '/v1/api/user/login/google',
+            register: '/v1/api/user/register'
+        };
+        
+        // Initialize the authentication flow
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!config.idToken || !config.provider) {
+                showError('Missing authentication data. Please try logging in again.');
+                return;
+            }
+            
+            // Start with login attempt
+            attemptLogin();
+        });
+        
+        // Main authentication functions
+        async function attemptLogin() {
+            showLoading();
+            
+            try {
+                const loginData = {
+                    idToken: config.idToken,
+                    provider: config.provider
+                };
+                
+                const response = await makeRequest(endpoints.login, loginData);
+                
+                if (response.ok) {
+                    // Login successful, redirect to success page
+                    handleSuccess();
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    const errorMessage = errorData.message || 'Login failed';
+                    
+                    // Check if this is a "user not found" error
+                    if (isUserNotFoundError(errorMessage)) {
+                        await extractUserInfo();
+                        showUserNotFound();
+                    } else {
+                        showError(errorMessage);
+                    }
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('Network error occurred. Please check your connection and try again.');
+            }
+        }
+        
+        async function handleCreateAccount() {
+            if (appState.isProcessing) return;
+            
+            appState.isProcessing = true;
+            showLoading('Creating your account...');
+            
+            try {
+                const registrationData = {
+                    authenticationMethodLk: 'GOOGLE',
+                    specialToken: config.idToken,
+                    username: '' // Will be generated from token
+                };
+                
+                const response = await makeRequest(endpoints.register, registrationData);
+                
+                if (response.ok) {
+                    // Registration successful
+                    handleSuccess();
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    const errorMessage = errorData.message || 'Registration failed';
+                    
+                    // Check if this is a "user already exists" error (409 Conflict)
+                    if (response.status === 409 || isUserExistsError(errorMessage)) {
+                        showUserExists();
+                    } else {
+                        showError(`Failed to create account: ${errorMessage}`);
+                    }
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showError('Network error occurred during registration. Please try again.');
+            } finally {
+                appState.isProcessing = false;
+            }
+        }
+        
+        // Utility functions
+        async function makeRequest(url, data) {
+            return fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+        }
+        
+        function isUserNotFoundError(errorMessage) {
+            const userNotFoundPhrases = [
+                'user not found',
+                'please register first',
+                'user does not exist'
+            ];
+            
+            const lowerMessage = errorMessage.toLowerCase();
+            return userNotFoundPhrases.some(phrase => lowerMessage.includes(phrase));
+        }
+        
+        function isUserExistsError(errorMessage) {
+            const userExistsPhrases = [
+                'user already exists',
+                'username already exists',
+                'account already exists',
+                'already registered'
+            ];
+            
+            const lowerMessage = errorMessage.toLowerCase();
+            return userExistsPhrases.some(phrase => lowerMessage.includes(phrase));
+        }
+        
+        async function extractUserInfo() {
+            // Try to extract user email from the ID token (basic JWT parsing)
+            try {
+                const payload = parseJWTPayload(config.idToken);
+                if (payload && payload.email) {
+                    appState.userEmail = payload.email;
+                }
+            } catch (error) {
+                console.warn('Could not extract user info from token:', error);
+            }
+        }
+        
+        function parseJWTPayload(token) {
+            try {
+                const parts = token.split('.');
+                if (parts.length !== 3) return null;
+                
+                const payload = parts[1];
+                const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+                return JSON.parse(decoded);
+            } catch (error) {
+                return null;
+            }
+        }
+        
+        // UI state management
+        function showLoading(message = 'Authenticating...') {
+            hideAllStates();
+            document.getElementById('loadingContent').style.display = 'flex';
+            if (message !== 'Authenticating...') {
+                document.querySelector('#loadingContent h2').textContent = message;
+            }
+        }
+        
+        function showError(message) {
+            hideAllStates();
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorContent').style.display = 'flex';
+        }
+        
+        function showUserNotFound() {
+            hideAllStates();
+            
+            if (appState.userEmail) {
+                document.getElementById('userEmail').textContent = appState.userEmail;
+                document.getElementById('userInfo').style.display = 'block';
+            }
+            
+            document.getElementById('userNotFoundContent').style.display = 'flex';
+        }
+        
+        function showUserExists() {
+            hideAllStates();
+            
+            if (appState.userEmail) {
+                document.getElementById('existingUserEmail').textContent = appState.userEmail;
+                document.getElementById('existingUserInfo').style.display = 'block';
+            }
+            
+            document.getElementById('userExistsContent').style.display = 'flex';
+        }
+        
+        function hideAllStates() {
+            document.getElementById('loadingContent').style.display = 'none';
+            document.getElementById('errorContent').style.display = 'none';
+            document.getElementById('userNotFoundContent').style.display = 'none';
+            document.getElementById('userExistsContent').style.display = 'none';
+        }
+        
+        // Event handlers
+        function handleSuccess() {
+            // Redirect to the intended destination
+            const finalRedirectUrl = config.redirectUrl || '/dashboard';
+            window.location.href = finalRedirectUrl;
+        }
+        
+        function handleRetry() {
+            attemptLogin();
+        }
+        
+        function handleCancel() {
+            // Redirect to home page or login page
+            window.location.href = '/';
+        }
+        
+        function handleTryLogin() {
+            // Attempt login again since the user already exists
+            attemptLogin();
+        }
+        
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .auth-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .auth-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        /* Loading styles */
+        .loading-content h2 {
+            color: #333;
+            margin: 20px 0 10px;
+            font-weight: 600;
+        }
+        
+        .loading-content p {
+            color: #666;
+            margin-bottom: 0;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Error styles */
+        .error-icon, .welcome-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .error-content h2 {
+            color: #e74c3c;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .error-content p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            word-break: break-word;
+            white-space: pre-wrap;
+            max-width: 100%;
+            overflow-wrap: break-word;
+        }
+        
+        /* Signup styles */
+        .signup-content h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .signup-content p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        /* User exists styles */
+        .exists-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .exists-content h2 {
+            color: #f39c12;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .exists-content p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .user-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .user-info p {
+            margin: 0;
+            color: #333;
+        }
+        
+        /* Button styles */
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        .create-btn, .retry-btn, .login-btn {
+            flex: 1;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .create-btn:hover, .retry-btn:hover, .login-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+        
+        .cancel-btn {
+            flex: 1;
+            background: #e2e8f0;
+            color: #4a5568;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .cancel-btn:hover {
+            background: #cbd5e0;
+            transform: translateY(-1px);
+        }
+        
+        .retry-btn {
+            width: 100%;
+            margin-top: 0;
+        }
+        
+        /* Footer styles */
+        .footer {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            padding: 15px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .footer p {
+            margin: 0;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 30px 20px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</body>
+</html> 

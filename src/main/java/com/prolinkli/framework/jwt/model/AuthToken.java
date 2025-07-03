@@ -35,6 +35,10 @@ public class AuthToken {
     }
 
     public AuthToken build() {
+      if (this.accessToken == null || this.accessToken.isEmpty() || this.refreshToken == null
+          || this.refreshToken.isEmpty()) {
+        return new AuthToken(); // Return an empty token if no tokens are set
+      }
       AuthToken token = new AuthToken();
       token.setId(this.id);
       token.setAccessToken(this.accessToken);

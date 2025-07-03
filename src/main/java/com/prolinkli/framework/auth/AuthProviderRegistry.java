@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.prolinkli.framework.auth.model.AuthProvider;
-import com.prolinkli.framework.auth.providers.InternalAuthProvider;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
@@ -28,7 +27,7 @@ public class AuthProviderRegistry {
 	@PostConstruct
 	public void init() {
 		for (AuthProvider provider : providers) {
-			String providerName = provider.getProviderName();
+			String providerName = provider.getProviderName().toLowerCase();
 			if (providersByType.containsKey(providerName)) {
 				throw new IllegalArgumentException("Duplicate provider name: " + providerName);
 			}
@@ -37,6 +36,7 @@ public class AuthProviderRegistry {
 	}
 
 	public AuthProvider getProvider(String providerName) {
+    providerName = providerName.toLowerCase();
 		if (providerName == null || providerName.isEmpty()) {
 			throw new IllegalArgumentException("Provider name cannot be null or empty");
 		}
