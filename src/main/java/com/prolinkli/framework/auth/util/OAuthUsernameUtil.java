@@ -79,17 +79,17 @@ public class OAuthUsernameUtil {
     StringBuilder emailBuilder = new StringBuilder(normalizedEmail);
     StringBuilder oauthIdBuilder = new StringBuilder(truncatedOauthId);
 
-    int lastTruncated = 0b0000;
+    boolean wasEmailTruncated = false;
     // Truncate to a maximum length of the email necessary
     while ((emailBuilder.length() + oauthIdBuilder.length()) > MAX_USERNAME_LENGTH) {
 
-      if ((lastTruncated & 0b0001) == 0) {
+      if (!wasEmailTruncated) {
         emailBuilder.delete(emailBuilder.length() - 1, emailBuilder.length());
       } else {
         oauthIdBuilder.delete(oauthIdBuilder.length() - 1, oauthIdBuilder.length());
       }
 
-      lastTruncated += 1;
+      wasEmailTruncated = !wasEmailTruncated; // Alternate truncation
 
     }
 
