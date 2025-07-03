@@ -9,6 +9,7 @@ import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.framework.auth.AuthProviderRegistry;
+import com.prolinkli.framework.exception.exceptions.model.AuthenticationFailedException;
 import com.prolinkli.framework.jwt.service.JwtCreateService;
 import com.prolinkli.framework.jwt.service.JwtSaveService;
 
@@ -59,8 +60,8 @@ public class UserAuthService {
       }
     }
 
-    // TODO: throw new exception when implemented
-    return null;
+    throw new AuthenticationFailedException("Authentication failed for an unknown reason");
+
   }
 
   public AuthorizedUser logout(AuthorizedUser user) {

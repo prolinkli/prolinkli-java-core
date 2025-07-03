@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import com.prolinkli.framework.exception.exceptions.model.AuthenticationFailedException;
 import com.prolinkli.framework.exception.exceptions.model.InvalidCredentialsException;
 import com.prolinkli.framework.exception.exceptions.model.ResourceAlreadyExists;
 import com.prolinkli.framework.exception.exceptions.model.ResourceNotFoundException;
@@ -60,6 +61,18 @@ public class GlobalExceptionHandler {
         ex.getMessage(),
         req.getRequestURI());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+  }
+
+  @ExceptionHandler({ AuthenticationFailedException.class })
+  public ResponseEntity<ErrorResponse> handleAuthenticationFailed(AuthenticationFailedException ex,
+      HttpServletRequest req) {
+    log.info("Authentication failed: {}", ex.getMessage());
+    ErrorResponse body = new ErrorResponse(
+        HttpStatus.UNAUTHORIZED.value(),
+        HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+        ex.getMessage(),
+        req.getRequestURI());
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
   }
 
   @ExceptionHandler({ AuthorizationDeniedException.class, InvalidCredentialsException.class })
