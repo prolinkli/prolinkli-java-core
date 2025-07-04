@@ -64,8 +64,8 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
   }
 
-  @ExceptionHandler({ AuthenticationFailedException.class })
-  public ResponseEntity<ErrorResponse> handleAuthenticationFailed(AuthenticationFailedException ex,
+  @ExceptionHandler({ AuthenticationFailedException.class, InvalidCredentialsException.class  })
+  public ResponseEntity<ErrorResponse> handleAuthenticationFailed(RuntimeException ex,
       HttpServletRequest req) {
     log.info("Authentication failed: {}", ex.getMessage());
     ErrorResponse body = new ErrorResponse(
@@ -76,7 +76,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
   }
 
-  @ExceptionHandler({ AuthorizationDeniedException.class, InvalidCredentialsException.class })
+  @ExceptionHandler({ AuthorizationDeniedException.class })
   public ResponseEntity<ErrorResponse> handleAuthorizationDenied(AuthorizationDeniedException ex,
       HttpServletRequest req) {
     log.info("Authorization denied: {}", ex.getMessage());
