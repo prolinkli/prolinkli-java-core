@@ -15,6 +15,7 @@ import com.prolinkli.framework.exception.exceptions.model.InvalidCredentialsExce
 import com.prolinkli.framework.exception.exceptions.model.ResourceAlreadyExists;
 import com.prolinkli.framework.exception.exceptions.model.ResourceNotFoundException;
 import com.prolinkli.framework.exception.response.model.ErrorResponse;
+import com.prolinkli.framework.jwt.model.JWTTokenExpiredException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
@@ -86,6 +87,18 @@ public class GlobalExceptionHandler {
         ex.getMessage(),
         req.getRequestURI());
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+  }
+
+  @ExceptionHandler({ JWTTokenExpiredException.class })
+  public ResponseEntity<ErrorResponse> handleJWTTokenExpired(JWTTokenExpiredException ex,
+      HttpServletRequest req) {
+    log.info("JWT token expired: {}", ex.getMessage());
+    ErrorResponse body = new ErrorResponse(
+        419,
+        "Page Expired",
+        ex.getMessage(),
+        req.getRequestURI());
+    return ResponseEntity.status(419).body(body);
   }
 
   @ExceptionHandler(NoHandlerFoundException.class)
