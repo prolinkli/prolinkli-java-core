@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class UserPermissions {
+public class UserPermission {
     private String userPermissionId;
     private Long userId;
     private String permissionLk;
