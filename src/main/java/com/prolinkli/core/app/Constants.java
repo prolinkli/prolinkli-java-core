@@ -146,4 +146,35 @@ public final class Constants {
 		}
 	}
 
+  /**
+   * Permission-related constants for the permissions system.
+   */
+  public static final class Permissions {
+
+    public static final class PermissionLk {
+      public static final String QUOTE = "QUOTE";
+      public static final String USER = "USER";
+      public static final String REPORT = "REPORT";
+      public static final String ADMIN = "ADMIN";
+      public static final String PROFILE = "PROFILE";
+    }
+
+    public static final class PermissionLevelLk {
+      public static final Integer NONE = 0b0000;
+      public static final Integer READ = 0b0001;
+      public static final Integer EDIT = 0b0011;
+      public static final Integer CREATE = 0b0111;
+      public static final Integer DELETE = 0b1111;
+    }
+
+    public static final class PermissionTargetLk {
+      public static final String ALL = "ALL";
+      public static final String SELF = "SELF";
+      public static final String PROFESSIONALS = "PROFESSIONALS";
+      public static final String CONSUMERS = "CONSUMERS";
+      public static final String TEAM = "TEAM";
+      public static final String ORGANIZATION = "ORGANIZATION";
+    }
+  }
+
 }

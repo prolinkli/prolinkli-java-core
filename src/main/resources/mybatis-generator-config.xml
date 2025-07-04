@@ -52,6 +52,43 @@
       <columnOverride column="updated_at" isGeneratedAlways="true" />
     </table>
 
+    <table tableName="permissions_lk"
+           schema="public"
+           domainObjectName="PermissionLkDb">
+      <columnOverride column="created_at" isGeneratedAlways="true" />
+      <columnOverride column="updated_at" isGeneratedAlways="true" />
+    </table>
+
+    <table tableName="permissions_levels_lk"
+           schema="public"
+           domainObjectName="PermissionLevelLkDb">
+      <columnOverride column="created_at" isGeneratedAlways="true" />
+      <columnOverride column="updated_at" isGeneratedAlways="true" />
+    </table>
+
+    <table tableName="permissions_targets_lk"
+           schema="public"
+           domainObjectName="PermissionTargetLkDb">
+      <columnOverride column="created_at" isGeneratedAlways="true" />
+      <columnOverride column="updated_at" isGeneratedAlways="true" />
+    </table>
+
+    <table tableName="permissions_possible_targets_lk"
+           schema="public"
+           domainObjectName="PermissionPossibleTargetLkDb" />
+
+    <table tableName="permissions_possible_levels_lk"
+           schema="public"
+           domainObjectName="PermissionPossibleLevelLkDb" />
+
+    <table tableName="user_permissions"
+           schema="public"
+           domainObjectName="UserPermissionDb">
+      <columnOverride column="created_at" isGeneratedAlways="true" />
+      <columnOverride column="updated_at" isGeneratedAlways="true" />
+      <columnOverride column="granted_at" isGeneratedAlways="true" />
+    </table>
+
     <!-- Example: generate for a table called 'users' -->
     <!--
 

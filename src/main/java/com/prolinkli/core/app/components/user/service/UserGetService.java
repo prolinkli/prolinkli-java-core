@@ -5,11 +5,13 @@ import java.math.BigInteger;
 import com.prolinkli.core.app.Constants;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserPassword;
+import com.prolinkli.core.app.components.user.model.UserWithPermissions;
 import com.prolinkli.core.app.db.model.generated.UserDb;
 import com.prolinkli.core.app.db.model.generated.UserDbExample;
 import com.prolinkli.core.app.db.model.generated.UserPasswordDb;
 import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
+import com.prolinkli.core.app.components.permission.service.PermissionService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,11 +21,13 @@ public class UserGetService {
 
   private final Dao<UserDb, Long> dao;
   private final Dao<UserPasswordDb, Long> userPasswordDao;
+  private final PermissionService permissionService;
 
   @Autowired
-  public UserGetService(DaoFactory daoFactory) {
+  public UserGetService(DaoFactory daoFactory, PermissionService permissionService) {
     this.dao = daoFactory.getDao(UserDb.class, Long.class);
     this.userPasswordDao = daoFactory.getDao(UserPasswordDb.class, Long.class);
+    this.permissionService = permissionService;
   }
 
   public User getUserById(Integer userId) {
@@ -124,6 +128,16 @@ public class UserGetService {
     userPassword.setPassword(userPasswordDb.getPasswordHash());
 
     return userPassword;
+  }
+
+  public UserWithPermissions getUserWithPermissions(Long userId) {
+    User user = getUserById(userId);
+    if (user == null) {
+      return null;
+    }
+    UserWithPermissions userWithPermissions = new UserWithPermissions(user);
+    userWithPermissions.setPermissions(permissionService.getUserPermissions(userId));
+    return userWithPermissions;
   }
 
 }
