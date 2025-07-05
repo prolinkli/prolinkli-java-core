@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import com.prolinkli.core.app.Constants;
 import com.prolinkli.framework.exception.exceptions.model.AuthenticationFailedException;
 import com.prolinkli.framework.exception.exceptions.model.InvalidCredentialsException;
 import com.prolinkli.framework.exception.exceptions.model.ResourceAlreadyExists;
 import com.prolinkli.framework.exception.exceptions.model.ResourceNotFoundException;
 import com.prolinkli.framework.exception.response.model.ErrorResponse;
+import com.prolinkli.framework.jwt.model.JWTTokenExpiredException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
@@ -64,8 +66,8 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
   }
 
-  @ExceptionHandler({ AuthenticationFailedException.class })
-  public ResponseEntity<ErrorResponse> handleAuthenticationFailed(AuthenticationFailedException ex,
+  @ExceptionHandler({ AuthenticationFailedException.class, InvalidCredentialsException.class })
+  public ResponseEntity<ErrorResponse> handleAuthenticationFailed(RuntimeException ex,
       HttpServletRequest req) {
     log.info("Authentication failed: {}", ex.getMessage());
     ErrorResponse body = new ErrorResponse(
@@ -76,7 +78,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
   }
 
-  @ExceptionHandler({ AuthorizationDeniedException.class, InvalidCredentialsException.class })
+  @ExceptionHandler({ AuthorizationDeniedException.class })
   public ResponseEntity<ErrorResponse> handleAuthorizationDenied(AuthorizationDeniedException ex,
       HttpServletRequest req) {
     log.info("Authorization denied: {}", ex.getMessage());
@@ -86,6 +88,18 @@ public class GlobalExceptionHandler {
         ex.getMessage(),
         req.getRequestURI());
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+  }
+
+  @ExceptionHandler({ JWTTokenExpiredException.class })
+  public ResponseEntity<ErrorResponse> handleJWTTokenExpired(JWTTokenExpiredException ex,
+      HttpServletRequest req) {
+    log.info("JWT token expired: {}", ex.getMessage());
+    ErrorResponse body = new ErrorResponse(
+        Constants.HttpStatuses.PageExpired.CODE,
+        Constants.HttpStatuses.PageExpired.REASON,
+        ex.getMessage(),
+        req.getRequestURI());
+    return ResponseEntity.status(Constants.HttpStatuses.PageExpired.CODE).body(body);
   }
 
   @ExceptionHandler(NoHandlerFoundException.class)

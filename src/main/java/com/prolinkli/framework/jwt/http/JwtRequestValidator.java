@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,7 +14,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.prolinkli.core.app.Constants.HttpStatuses;
+import com.prolinkli.framework.jwt.event.JwtExpirationEvent;
 import com.prolinkli.framework.jwt.model.AuthToken;
+import com.prolinkli.framework.jwt.model.JWTTokenExpiredException;
 import com.prolinkli.framework.jwt.service.JwtVerifyService;
 import com.prolinkli.framework.jwt.util.JwtUtil;
 
@@ -28,6 +32,9 @@ public class JwtRequestValidator extends OncePerRequestFilter {
   @Autowired
   private JwtVerifyService jwtVerifyService;
 
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
+
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
@@ -40,25 +47,31 @@ public class JwtRequestValidator extends OncePerRequestFilter {
     }
     String token = authToken.getAccessToken();
 
-    if (token != null && jwtVerifyService.verifyToken(token, response)) {
-      // Extract user information from JWT
-      Long userId = jwtVerifyService.extractUserId(token);
-      List<String> authorities = jwtVerifyService.extractAuthorities(token);
+    try {
+      if (token != null && jwtVerifyService.verifyToken(token, response)) {
+        // Extract user information from JWT
+        Long userId = jwtVerifyService.extractUserId(token);
+        List<String> authorities = jwtVerifyService.extractAuthorities(token);
 
-      // Convert authorities to Spring Security format
-      List<GrantedAuthority> grantedAuthorities = authorities.stream()
-          .map(auth -> new SimpleGrantedAuthority("ROLE_" + auth))
-          .collect(Collectors.toList());
+        // Convert authorities to Spring Security format
+        List<GrantedAuthority> grantedAuthorities = authorities.stream()
+            .map(auth -> new SimpleGrantedAuthority("ROLE_" + auth))
+            .collect(Collectors.toList());
 
-      // Create authentication token with user details
-      Authentication authentication = new UsernamePasswordAuthenticationToken(
-          userId, // principal - user ID from JWT
-          authToken, // credentials - not used here
-          grantedAuthorities // authorities from JWT
-      );
+        // Create authentication token with user details
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+            userId, // principal - user ID from JWT
+            authToken, // credentials - not used here
+            grantedAuthorities // authorities from JWT
+        );
 
-      // Set authentication in security context
-      SecurityContextHolder.getContext().setAuthentication(authentication);
+        // Set authentication in security context
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+      }
+    } catch (JWTTokenExpiredException e) {
+      eventPublisher.publishEvent(new JwtExpirationEvent(this, authToken));
+      // publish then throw
+      throw e;
     }
 
     filterChain.doFilter(request, response);

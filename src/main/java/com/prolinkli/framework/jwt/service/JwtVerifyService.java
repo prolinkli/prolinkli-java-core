@@ -20,6 +20,7 @@ import com.prolinkli.core.app.components.user.service.UserGetService;
 import com.prolinkli.framework.config.secrets.SecretsManager;
 import com.prolinkli.framework.jwt.model.AuthToken;
 import com.prolinkli.framework.jwt.model.AuthTokenType;
+import com.prolinkli.framework.jwt.model.JWTTokenExpiredException;
 import com.prolinkli.framework.jwt.util.JwtUtil;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -199,13 +200,15 @@ public class JwtVerifyService {
         return false; // No expiration date found in the token
       }
       if (JwtUtil.didExpire(body.getExpiration())) {
-        LOGGER.debug("JWT token has expired: {}", token);
-        return false; // Token has expired
+        throw new JWTTokenExpiredException();
       }
 
       return true;
 
     } catch (Exception e) {
+      if (e instanceof JWTTokenExpiredException) {
+        throw e;
+      }
       LOGGER.error("Error verifying JWT token: {}", e.getMessage());
       return false;
     }
