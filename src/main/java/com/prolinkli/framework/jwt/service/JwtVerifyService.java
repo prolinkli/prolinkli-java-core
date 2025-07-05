@@ -206,6 +206,9 @@ public class JwtVerifyService {
       return true;
 
     } catch (Exception e) {
+      if (e instanceof JWTTokenExpiredException) {
+        throw e;
+      }
       LOGGER.error("Error verifying JWT token: {}", e.getMessage());
       return false;
     }

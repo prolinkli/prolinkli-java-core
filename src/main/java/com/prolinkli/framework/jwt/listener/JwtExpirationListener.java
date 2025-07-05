@@ -16,8 +16,7 @@ public class JwtExpirationListener implements ApplicationListener<JwtExpirationE
     // This could involve logging, notifying users, or performing cleanup actions
     System.out.println("JWT Token expired for: " + event.getAuthToken().getAccessToken());
     // Additional logic can be added here as needed
-
-    throw new JWTTokenExpiredException();
+    //
   }
 
 }
