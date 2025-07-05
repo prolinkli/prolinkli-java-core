@@ -25,6 +25,9 @@ import java.io.StringWriter;
 public class GlobalExceptionHandler {
   private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+  private static final Integer PAGED_EXPIRED_CODE = 419;
+  private static final String PAGED_EXPIRED_REASON = "Page Expired";
+
   @Value("${app.debug:false}")
   private boolean debug;
 
@@ -94,11 +97,11 @@ public class GlobalExceptionHandler {
       HttpServletRequest req) {
     log.info("JWT token expired: {}", ex.getMessage());
     ErrorResponse body = new ErrorResponse(
-        419,
-        "Page Expired",
+        PAGED_EXPIRED_CODE,
+        PAGED_EXPIRED_REASON,
         ex.getMessage(),
         req.getRequestURI());
-    return ResponseEntity.status(419).body(body);
+    return ResponseEntity.status(PAGED_EXPIRED_CODE).body(body);
   }
 
   @ExceptionHandler(NoHandlerFoundException.class)
