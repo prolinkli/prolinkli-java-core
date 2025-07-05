@@ -25,9 +25,6 @@ import java.io.StringWriter;
 public class GlobalExceptionHandler {
   private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-  private static final Integer PAGED_EXPIRED_CODE = 419;
-  private static final String PAGED_EXPIRED_REASON = "Page Expired";
-
   @Value("${app.debug:false}")
   private boolean debug;
 
