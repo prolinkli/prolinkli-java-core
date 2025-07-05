@@ -4,7 +4,6 @@ import com.prolinkli.framework.jwt.model.AuthToken;
 
 import org.springframework.context.ApplicationEvent;
 
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
