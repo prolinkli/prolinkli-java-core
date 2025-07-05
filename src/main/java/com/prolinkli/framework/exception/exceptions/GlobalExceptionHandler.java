@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import com.prolinkli.core.app.Constants;
 import com.prolinkli.framework.exception.exceptions.model.AuthenticationFailedException;
 import com.prolinkli.framework.exception.exceptions.model.InvalidCredentialsException;
 import com.prolinkli.framework.exception.exceptions.model.ResourceAlreadyExists;
@@ -65,7 +66,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
   }
 
-  @ExceptionHandler({ AuthenticationFailedException.class, InvalidCredentialsException.class  })
+  @ExceptionHandler({ AuthenticationFailedException.class, InvalidCredentialsException.class })
   public ResponseEntity<ErrorResponse> handleAuthenticationFailed(RuntimeException ex,
       HttpServletRequest req) {
     log.info("Authentication failed: {}", ex.getMessage());
@@ -94,11 +95,11 @@ public class GlobalExceptionHandler {
       HttpServletRequest req) {
     log.info("JWT token expired: {}", ex.getMessage());
     ErrorResponse body = new ErrorResponse(
-        PAGED_EXPIRED_CODE,
-        PAGED_EXPIRED_REASON,
+        Constants.HttpStatuses.PageExpired.CODE,
+        Constants.HttpStatuses.PageExpired.REASON,
         ex.getMessage(),
         req.getRequestURI());
-    return ResponseEntity.status(PAGED_EXPIRED_CODE).body(body);
+    return ResponseEntity.status(Constants.HttpStatuses.PageExpired.CODE).body(body);
   }
 
   @ExceptionHandler(NoHandlerFoundException.class)

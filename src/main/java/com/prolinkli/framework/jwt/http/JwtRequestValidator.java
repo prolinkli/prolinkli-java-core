@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.prolinkli.core.app.Constants.HttpStatuses;
 import com.prolinkli.framework.jwt.event.JwtExpirationEvent;
 import com.prolinkli.framework.jwt.model.AuthToken;
 import com.prolinkli.framework.jwt.model.JWTTokenExpiredException;
@@ -69,6 +70,8 @@ public class JwtRequestValidator extends OncePerRequestFilter {
       }
     } catch (JWTTokenExpiredException e) {
       eventPublisher.publishEvent(new JwtExpirationEvent(this, authToken));
+      // publish then throw
+      throw e;
     }
 
     filterChain.doFilter(request, response);

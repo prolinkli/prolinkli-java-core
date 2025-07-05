@@ -13,8 +13,8 @@ public final class Constants {
 
   public static final class HttpStatuses {
     public static final class PageExpired {
-      private static final Integer CODE = 419;
-      private static final String REASON = "Page Expired";
+      public static final Integer CODE = 419;
+      public static final String REASON = "Page Expired";
     }
   }
 
