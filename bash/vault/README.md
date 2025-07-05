@@ -51,6 +51,9 @@ Copies secrets from one Vault path to another.
 
 **Examples:**
 ```bash
+# First authenticate (if not already done)
+./vault-auth.sh
+
 # Copy production secrets to staging
 ./vault-copy-secrets.sh app/prod/config app/staging/config
 
@@ -58,9 +61,8 @@ Copies secrets from one Vault path to another.
 ./vault-copy-secrets.sh database/prod database/staging
 ```
 
-**Required Environment Variables:**
-- `VAULT_TOKEN`: Your Vault authentication token
-- `VAULT_ADDR`: Vault server address (default: http://10.2.2.2:8200)
+**Required:**
+- Authentication via `vault-auth.sh` or `VAULT_TOKEN` environment variable
 
 **Optional Environment Variables:**
 - `VAULT_NAMESPACE`: Vault namespace (if using Vault Enterprise)
@@ -78,6 +80,9 @@ Adds users to the java-core group for project access. Handles both system-level 
 
 **Examples:**
 ```bash
+# First authenticate (if not already done)
+./vault-auth.sh
+
 # Add single user
 ./add-java-core-member.sh john.doe
 
@@ -86,10 +91,9 @@ Adds users to the java-core group for project access. Handles both system-level 
 ```
 
 **Required:**
-- Sudo privileges for system group management
+- Authentication via `vault-auth.sh` or `VAULT_TOKEN` environment variable
 
 **Optional Environment Variables:**
-- `VAULT_TOKEN`: For Vault identity group operations
 - `VAULT_ADDR`: Vault server address (default: http://10.2.2.2:8200)
 
 ## Setup
