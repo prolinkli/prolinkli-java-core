@@ -3,6 +3,13 @@
 # Source logging functions
 source ./bash/log.sh
 
+# Check Vault session before starting
+log_info "Checking Vault authentication..."
+if ! ./bash/vault/check_vault_session.sh "MyBatis Generator"; then
+    log_error "Cannot run MyBatis Generator without valid Vault authentication"
+    exit 1
+fi
+
 # JDBC Configuration
 JDBC_DRIVER="org.postgresql.Driver"
 JDBC_URL="jdbc:postgresql://localhost:6543/postgres"
