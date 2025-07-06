@@ -1,34 +1,28 @@
 #!/bin/bash
 
+# Load vault environment configuration
+source "$(dirname "${BASH_SOURCE[0]}")/vault-env.sh"
+
 source ../log.sh
 
 # Vault Authentication Script
 # This script authenticates to Vault using various methods
 # Usage: ./vault-auth.sh [method]
 
-# Configuration
-VAULT_ADDR="${VAULT_ADDR:-http://10.2.2.2:8200}"
-VAULT_NAMESPACE="${VAULT_NAMESPACE:-}"
-TOKEN_FILE="$HOME/.vault-token"
+# Configuration (using vault-env.sh values)
+TOKEN_FILE="$VAULT_TOKEN_FILE"
 AUTH_METHOD="${1:-auto}"
 
-# Function to check if vault CLI is installed
+# Function to check if vault CLI is installed (using vault-env.sh)
 check_vault_cli() {
-    if ! command -v vault &> /dev/null; then
-        log_error "Vault CLI is not installed. Please install HashiCorp Vault CLI first."
-        echo "Installation instructions: https://developer.hashicorp.com/vault/docs/install"
+    if ! vault_env_check_cli; then
         exit 1
     fi
 }
 
-# Function to test vault connection
+# Function to test vault connection (using vault-env.sh)
 test_vault_connection() {
-    if ! vault status &> /dev/null; then
-        log_error "Cannot connect to Vault at $VAULT_ADDR"
-        log_error "Please check your VAULT_ADDR and ensure Vault is accessible"
-        return 1
-    fi
-    return 0
+    vault_env_test_connection
 }
 
 # Function to check if already authenticated

@@ -4,6 +4,9 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
+# Load vault environment configuration
+source "$(dirname "${BASH_SOURCE[0]}")/vault-env.sh"
+
 # Source log.sh from the correct location
 if [[ -f "$SCRIPT_DIR/../log.sh" ]]; then
     source "$SCRIPT_DIR/../log.sh"
@@ -20,70 +23,33 @@ fi
 # Vault User Management Script
 # This script helps manage Vault users and provides web UI access
 
-# Configuration
-VAULT_ADDR="${VAULT_ADDR:-http://10.2.2.2:8200}"
-VAULT_NAMESPACE="${VAULT_NAMESPACE:-}"
-
-# Function to check if vault CLI is installed
+# Function to check if vault CLI is installed (using vault-env.sh)
 check_vault_cli() {
-    if ! command -v vault &> /dev/null; then
-        log_error "Vault CLI is not installed. Please install HashiCorp Vault CLI first."
-        echo "Installation instructions: https://developer.hashicorp.com/vault/docs/install"
+    if ! vault_env_check_cli; then
         exit 1
     fi
 }
 
-# Function to test vault connection
+# Function to test vault connection (using vault-env.sh)
 test_vault_connection() {
-    if ! vault status &> /dev/null; then
-        log_error "Cannot connect to Vault at $VAULT_ADDR"
-        log_error "Please check your VAULT_ADDR and ensure Vault is accessible"
-        return 1
-    fi
-    return 0
+    vault_env_test_connection
 }
 
-# Function to check if authenticated
+# Function to check if authenticated (using vault-env.sh)
 check_auth() {
-    if ! vault token lookup &> /dev/null; then
-        log_error "Not authenticated to Vault. Please authenticate first:"
-        log_info "Run: ./vault-auth.sh"
-        return 1
-    fi
-    return 0
+    vault_env_check_auth
 }
 
-# Function to open Vault UI
+# Function to open Vault UI (using vault-env.sh)
 open_vault_ui() {
-    local url="$VAULT_ADDR/ui"
-    
-    log_info "Opening Vault UI at: $url"
-    
-    # Try to open the URL in the default browser
-    if command -v open &> /dev/null; then
-        open "$url"
-    elif command -v xdg-open &> /dev/null; then
-        xdg-open "$url"
-    else
-        log_info "Please open this URL in your browser:"
-        echo "$url"
-    fi
-    
-    log_info "Available authentication methods:"
-    log_info "  - Username/Password (Method: Username)"
-    log_info "  - GitHub (Method: GitHub)"
-    log_info "  - Root Token (Method: Token)"
-    echo
-    log_info "Test credentials:"
-    log_info "  Admin: username=admin, password=admin123"
-    log_info "  User: username=user, password=user123"
+    vault_env_open_ui
 }
 
 # Function to create a new user
 create_user() {
     local username="$1"
     local password="$2"
-    local policy="${3:-github-user}"
+    local policy="${3:-$VAULT_USER_POLICY}"
     
     if [[ -z "$username" || -z "$password" ]]; then
         log_error "Username and password are required"

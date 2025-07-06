@@ -1,45 +1,37 @@
 #!/bin/bash
 
+# Load vault environment configuration
+source "$(dirname "${BASH_SOURCE[0]}")/vault-env.sh"
+
 source ../log.sh
 
 # Vault Secret Copy Script
 # This script copies secrets from one Vault path to another (supports recursive copying)
 # Usage: ./vault-copy-secrets.sh <source_path> <destination_path> [--recursive]
 
-# Configuration - these can be set as environment variables
-VAULT_ADDR="${VAULT_ADDR:-http://10.2.2.2:8200}"
-VAULT_TOKEN="${VAULT_TOKEN:-}"
-VAULT_NAMESPACE="${VAULT_NAMESPACE:-}"
-VAULT_MOUNT="${VAULT_MOUNT:-kv}"
-VAULT_VERSION="${VAULT_VERSION:-v2}"
-TOKEN_FILE="$HOME/.vault-token"
+# Configuration (using vault-env.sh values)
+VAULT_MOUNT="${VAULT_KV_MOUNT}"
+VAULT_VERSION="${VAULT_KV_VERSION}"
+TOKEN_FILE="$VAULT_TOKEN_FILE"
 
 # Global variables
 RECURSIVE=false
 COPIED_COUNT=0
 FAILED_COUNT=0
 
-# Function to load token from file
+# Function to load token from file (using vault-env.sh)
 load_token_from_file() {
-    if [[ -z "$VAULT_TOKEN" && -f "$TOKEN_FILE" ]]; then
-        local token=$(cat "$TOKEN_FILE")
-        if [[ -n "$token" ]]; then
-            export VAULT_TOKEN="$token"
-            log_info "Loaded token from $TOKEN_FILE"
-        fi
-    fi
+    vault_env_load_token
 }
 
-# Function to check if vault CLI is installed
+# Function to check if vault CLI is installed (using vault-env.sh)
 check_vault_cli() {
-    if ! command -v vault &> /dev/null; then
-        log_error "Vault CLI is not installed. Please install HashiCorp Vault CLI first."
-        echo "Installation instructions: https://developer.hashicorp.com/vault/docs/install"
+    if ! vault_env_check_cli; then
         exit 1
     fi
 }
 
-# Function to validate vault connection
+# Function to validate vault connection (using vault-env.sh)
 validate_vault_connection() {
     log_info "Validating Vault connection..."
     
@@ -53,45 +45,34 @@ validate_vault_connection() {
     fi
 
     # Test vault connection
-    if ! vault status &> /dev/null; then
-        log_error "Cannot connect to Vault at $VAULT_ADDR"
-        log_error "Please check your VAULT_ADDR and ensure Vault is accessible"
+    if ! vault_env_test_connection; then
         exit 1
     fi
 
     # Test authentication
-    if ! vault token lookup &> /dev/null; then
-        log_error "Authentication failed. Please check your VAULT_TOKEN or run ./vault-auth.sh"
+    if ! vault_env_check_auth; then
         exit 1
     fi
 
     log_success "Vault connection validated"
 }
 
-# Function to check if a secret exists
+# Function to check if a secret exists (using vault-env.sh)
 secret_exists() {
     local path="$1"
     local full_path
     
-    if [[ "$VAULT_VERSION" == "v2" ]]; then
-        full_path="$VAULT_MOUNT/metadata/$path"
-    else
-        full_path="$VAULT_MOUNT/$path"
-    fi
+    full_path=$(vault_env_kv_metadata_path "$path")
     
     vault read "$full_path" &> /dev/null
 }
 
-# Function to list secrets at a path
+# Function to list secrets at a path (using vault-env.sh)
 list_secrets() {
     local path="$1"
     local full_path
     
-    if [[ "$VAULT_VERSION" == "v2" ]]; then
-        full_path="$VAULT_MOUNT/metadata/$path"
-    else
-        full_path="$VAULT_MOUNT/$path"
-    fi
+    full_path=$(vault_env_kv_metadata_path "$path")
     
     vault list -format=json "$full_path" 2>/dev/null | jq -r '.[]? // empty'
 }
@@ -142,32 +123,24 @@ get_all_secret_paths() {
     done <<< "$items"
 }
 
-# Function to read secret from vault
+# Function to read secret from vault (using vault-env.sh)
 read_secret() {
     local path="$1"
-    local full_path
-    
-    if [[ "$VAULT_VERSION" == "v2" ]]; then
-        full_path="$VAULT_MOUNT/data/$path"
-    else
-        full_path="$VAULT_MOUNT/$path"
-    fi
-    
-    vault read -format=json "$full_path"
+    vault_env_read_secret "$path"
 }
 
-# Function to write secret to vault
+# Function to write secret to vault (using vault-env.sh)
 write_secret() {
     local path="$1"
     local data="$2"
     local full_path
     
-    if [[ "$VAULT_VERSION" == "v2" ]]; then
-        full_path="$VAULT_MOUNT/data/$path"
+    full_path=$(vault_env_kv_path "$path")
+    
+    if [[ "$VAULT_KV_VERSION" == "v2" ]]; then
         # For KV v2, we need to wrap the data in a "data" field
         echo "$data" | vault write "$full_path" -
     else
-        full_path="$VAULT_MOUNT/$path"
         echo "$data" | vault write "$full_path" -
     fi
 }

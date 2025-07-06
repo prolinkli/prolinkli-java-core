@@ -4,6 +4,9 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
+# Load vault environment configuration
+source "$(dirname "${BASH_SOURCE[0]}")/vault-env.sh"
+
 # Source log.sh from the correct location
 if [[ -f "$SCRIPT_DIR/../log.sh" ]]; then
     source "$SCRIPT_DIR/../log.sh"
@@ -21,30 +24,18 @@ fi
 # This script checks if the user is authenticated to Vault and if their session is valid
 # Used as a pre-startup check for Spring applications
 
-# Configuration
-VAULT_ADDR="${VAULT_ADDR:-http://10.2.2.2:8200}"
-VAULT_NAMESPACE="${VAULT_NAMESPACE:-}"
-TOKEN_FILE="$HOME/.vault-token"
-MIN_TTL_SECONDS=300  # 5 minutes minimum TTL
+# Configuration (using vault-env.sh values)
+TOKEN_FILE="$VAULT_TOKEN_FILE"
+MIN_TTL_SECONDS="$VAULT_MIN_TTL_SECONDS"
 
-# Function to check if vault CLI is installed
+# Function to check if vault CLI is installed (using vault-env.sh)
 check_vault_cli() {
-    if ! command -v vault &> /dev/null; then
-        log_error "Vault CLI is not installed. Please install HashiCorp Vault CLI first."
-        echo "Installation instructions: https://developer.hashicorp.com/vault/docs/install"
-        return 1
-    fi
-    return 0
+    vault_env_check_cli
 }
 
-# Function to test vault connection
+# Function to test vault connection (using vault-env.sh)
 test_vault_connection() {
-    if ! vault status &> /dev/null; then
-        log_error "Cannot connect to Vault at $VAULT_ADDR"
-        log_error "Please check your VAULT_ADDR and ensure Vault is accessible"
-        return 1
-    fi
-    return 0
+    vault_env_test_connection
 }
 
 # Function to check if token exists and is valid
@@ -113,18 +104,8 @@ get_token_from_web() {
     log_info "5. Come back here and paste it"
     echo
     
-    # Try to open the URL automatically
-    if command -v open &> /dev/null; then
-        log_info "🚀 Opening Vault UI in your browser..."
-        open "$vault_ui_url" &
-        sleep 2
-    elif command -v xdg-open &> /dev/null; then
-        log_info "🚀 Opening Vault UI in your browser..."
-        xdg-open "$vault_ui_url" &
-        sleep 2
-    else
-        log_info "Please open this URL manually: $vault_ui_url"
-    fi
+    # Try to open the URL automatically (using vault-env.sh function)
+    vault_env_open_ui
     
     echo
     log_info "💡 How to copy your token after logging in:"
