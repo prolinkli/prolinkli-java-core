@@ -7,6 +7,7 @@ import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
 import com.prolinkli.core.app.db.model.generated.UserDb;
 import com.prolinkli.framework.db.dao.Dao;
+import com.prolinkli.framework.exception.exceptions.model.AuthenticationFailedException;
 
 public interface AuthProvider {
 
@@ -27,7 +28,7 @@ public interface AuthProvider {
    * @param credentials the credentials to authenticate
    * @return an authentication token if successful, null otherwise
    */
-  Boolean authenticate(Map<String, Object> credentials);
+  Boolean authenticate(Map<String, Object> credentials) throws AuthenticationFailedException;
 
   /**
    * Validates the credentials provided for authentication.
