@@ -1,40 +1,33 @@
 #!/bin/bash
 
+# Load vault environment configuration
+source "$(dirname "${BASH_SOURCE[0]}")/vault-env.sh"
+
 source ../log.sh
 
 # Java Core Vault Group Member Addition Script
 # This script adds users to the java-core Vault identity group
 # Usage: ./add-java-core-member.sh <username> [<username2> ...]
 
-# Configuration
+# Configuration (using vault-env.sh values)
 JAVA_CORE_GROUP="java-core"
-VAULT_ADDR="${VAULT_ADDR:-http://10.2.2.2:8200}"
-VAULT_TOKEN="${VAULT_TOKEN:-}"
-VAULT_MOUNT="${VAULT_MOUNT:-kv}"
-VAULT_VERSION="${VAULT_VERSION:-v2}"
-TOKEN_FILE="$HOME/.vault-token"
+VAULT_MOUNT="${VAULT_KV_MOUNT}"
+VAULT_VERSION="${VAULT_KV_VERSION}"
+TOKEN_FILE="$VAULT_TOKEN_FILE"
 
-# Function to load token from file
+# Function to load token from file (using vault-env.sh)
 load_token_from_file() {
-    if [[ -z "$VAULT_TOKEN" && -f "$TOKEN_FILE" ]]; then
-        local token=$(cat "$TOKEN_FILE")
-        if [[ -n "$token" ]]; then
-            export VAULT_TOKEN="$token"
-            log_info "Loaded token from $TOKEN_FILE"
-        fi
-    fi
+    vault_env_load_token
 }
 
-# Function to check if vault CLI is installed
+# Function to check if vault CLI is installed (using vault-env.sh)
 check_vault_cli() {
-    if ! command -v vault &> /dev/null; then
-        log_error "Vault CLI is not installed. Please install HashiCorp Vault CLI first."
-        echo "Installation instructions: https://developer.hashicorp.com/vault/docs/install"
+    if ! vault_env_check_cli; then
         exit 1
     fi
 }
 
-# Function to validate vault connection
+# Function to validate vault connection (using vault-env.sh)
 validate_vault_connection() {
     log_info "Validating Vault connection..."
     
@@ -48,15 +41,12 @@ validate_vault_connection() {
     fi
 
     # Test vault connection
-    if ! vault status &> /dev/null; then
-        log_error "Cannot connect to Vault at $VAULT_ADDR"
-        log_error "Please check your VAULT_ADDR and ensure Vault is accessible"
+    if ! vault_env_test_connection; then
         exit 1
     fi
 
     # Test authentication
-    if ! vault token lookup &> /dev/null; then
-        log_error "Authentication failed. Please check your VAULT_TOKEN or run ./vault-auth.sh"
+    if ! vault_env_check_auth; then
         exit 1
     fi
 
@@ -76,29 +66,29 @@ create_vault_group_policy() {
 # Allows access to java-core specific secrets
 
 # Allow access to java-core secrets
-path "kv/data/java-core/*" {
+path "${VAULT_KV_MOUNT}/data/java-core/*" {
   capabilities = ["read", "list"]
 }
 
-path "kv/metadata/java-core/*" {
+path "${VAULT_KV_MOUNT}/metadata/java-core/*" {
   capabilities = ["read", "list"]
 }
 
 # Allow access to shared development secrets
-path "kv/data/shared/dev/*" {
+path "${VAULT_KV_MOUNT}/data/shared/dev/*" {
   capabilities = ["read", "list"]
 }
 
-path "kv/metadata/shared/dev/*" {
+path "${VAULT_KV_MOUNT}/metadata/shared/dev/*" {
   capabilities = ["read", "list"]
 }
 
 # Allow reading own user secrets
-path "kv/data/users/{{identity.entity.name}}/*" {
+path "${VAULT_KV_MOUNT}/data/users/{{identity.entity.name}}/*" {
   capabilities = ["create", "read", "update", "delete", "list"]
 }
 
-path "kv/metadata/users/{{identity.entity.name}}/*" {
+path "${VAULT_KV_MOUNT}/metadata/users/{{identity.entity.name}}/*" {
   capabilities = ["create", "read", "update", "delete", "list"]
 }
 EOF

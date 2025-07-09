@@ -5,10 +5,19 @@ A comprehensive Java core framework built with **Spring Boot**, **Maven**, **MyB
 ## 🚀 Quick Start
 
 ### Prerequisites
+- **Vault** - [Download here](https://developer.hashicorp.com/vault/downloads)
 - **Java 17+** - [Download here](https://adoptium.net/)
 - **Docker Desktop** - [Download here](https://www.docker.com/products/docker-desktop/)
 
 ### Setup & Run
+
+> ⚠️ **IMPORTANT**: Before running this application, you must:
+> 
+> 1. **Download Vault**: Install HashiCorp Vault from [https://developer.hashicorp.com/vault/downloads](https://developer.hashicorp.com/vault/downloads)
+> 2. **Contact @IdentityofSine**: Reach out to [@IdentityofSine](https://github.com/IdentityofSine) to request a Vault account and credentials
+> 
+> The application requires Vault authentication to access secrets and configuration. Without proper Vault setup, the application will not start correctly.
+
 
 ```bash
 # 1. Clone repository
