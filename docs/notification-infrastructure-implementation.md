@@ -45,6 +45,209 @@ Design and implement a comprehensive notification infrastructure that supports m
   - [ ] notification_preferences table
 - [ ] **MyBatis Integration**: Generate mappers and models
 
+#### Database Table Definitions
+
+**notification_channels_lk** - Channel types lookup
+```sql
+CREATE TABLE notification_channels_lk (
+    channel_id VARCHAR(50) PRIMARY KEY,
+    channel_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Insert default channels
+INSERT INTO notification_channels_lk (channel_id, channel_name, description) VALUES
+('EMAIL', 'Email Notifications', 'HTML/text email notifications via SMTP or API'),
+('SMS', 'SMS Notifications', 'Text message notifications via SMS gateway'),
+('IN_APP', 'In-App Notifications', 'Rich notifications stored in database for app display'),
+('PUSH', 'Push Notifications', 'Mobile push notifications via FCM/APNS');
+```
+
+**notification_channel_rules_lk** - Rule types lookup
+```sql
+CREATE TABLE notification_channel_rules_lk (
+    rule_id VARCHAR(50) PRIMARY KEY,
+    rule_name VARCHAR(100) NOT NULL,
+    rule_description TEXT,
+    data_type VARCHAR(20) NOT NULL, -- 'INTEGER', 'STRING', 'BOOLEAN', 'JSON'
+    default_value TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Insert default rule types
+INSERT INTO notification_channel_rules_lk (rule_id, rule_name, rule_description, data_type) VALUES
+('MAX_SUBJECT_LENGTH', 'Maximum Subject Length', 'Maximum characters allowed in subject line', 'INTEGER'),
+('MAX_BODY_LENGTH', 'Maximum Body Length', 'Maximum characters allowed in message body', 'INTEGER'),
+('SUPPORTS_HTML', 'HTML Support', 'Whether channel supports HTML content', 'BOOLEAN'),
+('SUPPORTS_RICH_CONTENT', 'Rich Content Support', 'Whether channel supports rich/structured content', 'BOOLEAN'),
+('REQUIRED_FIELDS', 'Required Fields', 'JSON array of required fields for this channel', 'JSON'),
+('MAX_RECIPIENT_COUNT', 'Maximum Recipients', 'Maximum number of recipients per message', 'INTEGER'),
+('SUPPORTS_ATTACHMENTS', 'Attachment Support', 'Whether channel supports file attachments', 'BOOLEAN'),
+('MAX_ATTACHMENT_SIZE', 'Maximum Attachment Size', 'Maximum size per attachment in bytes', 'INTEGER');
+```
+
+**notification_channel_rules** - Channel-specific rule values
+```sql
+CREATE TABLE notification_channel_rules (
+    rule_mapping_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    channel_id VARCHAR(50) NOT NULL,
+    rule_id VARCHAR(50) NOT NULL,
+    rule_value TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (channel_id) REFERENCES notification_channels_lk(channel_id) ON DELETE CASCADE,
+    FOREIGN KEY (rule_id) REFERENCES notification_channel_rules_lk(rule_id) ON DELETE CASCADE,
+    UNIQUE KEY unique_channel_rule (channel_id, rule_id)
+);
+
+-- Insert default channel rules
+INSERT INTO notification_channel_rules (channel_id, rule_id, rule_value) VALUES
+-- SMS constraints
+('SMS', 'MAX_BODY_LENGTH', '160'),
+('SMS', 'SUPPORTS_HTML', 'false'),
+('SMS', 'SUPPORTS_RICH_CONTENT', 'false'),
+('SMS', 'REQUIRED_FIELDS', '["phone_number"]'),
+('SMS', 'MAX_RECIPIENT_COUNT', '1'),
+('SMS', 'SUPPORTS_ATTACHMENTS', 'false'),
+
+-- Email constraints
+('EMAIL', 'MAX_SUBJECT_LENGTH', '255'),
+('EMAIL', 'MAX_BODY_LENGTH', '1000000'),
+('EMAIL', 'SUPPORTS_HTML', 'true'),
+('EMAIL', 'SUPPORTS_RICH_CONTENT', 'true'),
+('EMAIL', 'REQUIRED_FIELDS', '["email_address"]'),
+('EMAIL', 'MAX_RECIPIENT_COUNT', '100'),
+('EMAIL', 'SUPPORTS_ATTACHMENTS', 'true'),
+('EMAIL', 'MAX_ATTACHMENT_SIZE', '25000000'), -- 25MB
+
+-- Push notification constraints
+('PUSH', 'MAX_SUBJECT_LENGTH', '50'),
+('PUSH', 'MAX_BODY_LENGTH', '25'),
+('PUSH', 'SUPPORTS_HTML', 'false'),
+('PUSH', 'SUPPORTS_RICH_CONTENT', 'false'),
+('PUSH', 'REQUIRED_FIELDS', '["device_token"]'),
+('PUSH', 'MAX_RECIPIENT_COUNT', '1'),
+('PUSH', 'SUPPORTS_ATTACHMENTS', 'false'),
+
+-- In-app notification constraints
+('IN_APP', 'MAX_SUBJECT_LENGTH', '200'),
+('IN_APP', 'MAX_BODY_LENGTH', '5000'),
+('IN_APP', 'SUPPORTS_HTML', 'true'),
+('IN_APP', 'SUPPORTS_RICH_CONTENT', 'true'),
+('IN_APP', 'REQUIRED_FIELDS', '["user_id"]'),
+('IN_APP', 'MAX_RECIPIENT_COUNT', '1'),
+('IN_APP', 'SUPPORTS_ATTACHMENTS', 'true'),
+('IN_APP', 'MAX_ATTACHMENT_SIZE', '10000000'); -- 10MB
+```
+
+**notification_templates** - Template definitions
+```sql
+CREATE TABLE notification_templates (
+    template_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    template_name VARCHAR(100) NOT NULL,
+    template_description TEXT,
+    channel_id VARCHAR(50) NOT NULL,
+    subject_template VARCHAR(500), -- Template with variables like {{userName}}
+    content_template TEXT NOT NULL, -- Template content with variables
+    content_type VARCHAR(50) DEFAULT 'text/plain', -- 'text/plain', 'text/html', 'application/json'
+    required_variables JSON, -- JSON array of required template variables
+    default_variables JSON, -- JSON object of default variable values
+    is_active BOOLEAN DEFAULT TRUE,
+    created_by BIGINT, -- User who created the template
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (channel_id) REFERENCES notification_channels_lk(channel_id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_channel_active (channel_id, is_active)
+);
+
+-- Insert sample templates
+INSERT INTO notification_templates (template_name, template_description, channel_id, subject_template, content_template, content_type, required_variables) VALUES
+('Welcome Email', 'Welcome email for new users', 'EMAIL', 'Welcome to {{companyName}}, {{userName}}!', 
+ '<h1>Welcome {{userName}}!</h1><p>Thank you for joining {{companyName}}. We''re excited to have you on board.</p>', 
+ 'text/html', '["userName", "companyName"]'),
+ 
+('Order Confirmation SMS', 'SMS confirmation for orders', 'SMS', NULL, 
+ 'Hi {{userName}}, your order #{{orderNumber}} for {{orderTotal}} has been confirmed. Track: {{trackingUrl}}', 
+ 'text/plain', '["userName", "orderNumber", "orderTotal", "trackingUrl"]'),
+ 
+('Password Reset Email', 'Password reset email', 'EMAIL', 'Reset your {{companyName}} password', 
+ '<h2>Password Reset</h2><p>Hi {{userName}},</p><p>Click <a href="{{resetUrl}}">here</a> to reset your password.</p><p>This link expires in 1 hour.</p>', 
+ 'text/html', '["userName", "resetUrl", "companyName"]'),
+ 
+('In-App Order Update', 'In-app notification for order updates', 'IN_APP', 'Order Update', 
+ '{"title": "Order {{orderNumber}} Updated", "message": "Your order status is now {{status}}", "actions": [{"label": "View Order", "url": "/orders/{{orderNumber}}"}]}', 
+ 'application/json', '["orderNumber", "status"]');
+```
+
+**notification_logs** - Audit trail of sent notifications
+```sql
+CREATE TABLE notification_logs (
+    log_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    notification_id VARCHAR(100) NOT NULL, -- Our internal tracking ID
+    user_id BIGINT, -- User who received the notification (if applicable)
+    channel_id VARCHAR(50) NOT NULL,
+    template_id BIGINT,
+    recipient_type VARCHAR(20) NOT NULL, -- 'USER', 'EMAIL', 'PHONE', 'DEVICE_TOKEN'
+    recipient_id VARCHAR(255) NOT NULL, -- The actual recipient identifier
+    subject VARCHAR(500), -- Rendered subject
+    content TEXT, -- Rendered content
+    content_type VARCHAR(50),
+    status VARCHAR(50) DEFAULT 'PENDING', -- 'PENDING', 'SENT', 'DELIVERED', 'FAILED', 'BOUNCED', 'REJECTED'
+    priority VARCHAR(20) DEFAULT 'NORMAL', -- 'HIGH', 'NORMAL', 'LOW'
+    external_id VARCHAR(255), -- Provider's tracking ID (SendGrid message ID, etc.)
+    external_provider VARCHAR(50), -- 'sendgrid', 'twilio', 'internal', etc.
+    error_code VARCHAR(50), -- Provider-specific error code
+    error_message TEXT, -- Error details if failed
+    metadata JSON, -- Additional metadata
+    sent_at TIMESTAMP NULL, -- When sent to provider
+    delivered_at TIMESTAMP NULL, -- When delivery confirmed
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (channel_id) REFERENCES notification_channels_lk(channel_id) ON DELETE CASCADE,
+    FOREIGN KEY (template_id) REFERENCES notification_templates(template_id) ON DELETE SET NULL,
+    INDEX idx_notification_tracking (notification_id),
+    INDEX idx_user_notifications (user_id, created_at DESC),
+    INDEX idx_channel_status (channel_id, status),
+    INDEX idx_external_tracking (external_id, external_provider),
+    INDEX idx_status_timestamp (status, sent_at)
+);
+```
+
+**notification_preferences** - User notification preferences
+```sql
+CREATE TABLE notification_preferences (
+    preference_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    channel_id VARCHAR(50) NOT NULL,
+    is_enabled BOOLEAN DEFAULT TRUE,
+    quiet_hours_start TIME, -- Optional: start of quiet hours (no notifications)
+    quiet_hours_end TIME, -- Optional: end of quiet hours
+    max_daily_notifications INTEGER, -- Optional: max notifications per day
+    preferred_contact_info VARCHAR(255), -- Override default contact info (email, phone, etc.)
+    preferences JSON, -- Channel-specific preferences (e.g., email format preference)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (channel_id) REFERENCES notification_channels_lk(channel_id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_channel (user_id, channel_id),
+    INDEX idx_user_enabled (user_id, is_enabled)
+);
+
+-- Insert default preferences for existing users (optional)
+-- This could be part of a separate migration to set default preferences
+INSERT INTO notification_preferences (user_id, channel_id, is_enabled)
+SELECT u.id, 'EMAIL', TRUE FROM users u
+WHERE NOT EXISTS (SELECT 1 FROM notification_preferences np WHERE np.user_id = u.id AND np.channel_id = 'EMAIL');
+```
+
 ### Phase 2: Templating Architecture
 - [ ] **Abstract Templator**: Create base templating provider
   - [ ] AbstractNotificationTemplator
