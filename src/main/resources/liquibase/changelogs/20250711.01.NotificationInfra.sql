@@ -1,0 +1,2 @@
+--liquibase formatted sql
+--changeset kerdogan:20250711.01.NotificationInfra

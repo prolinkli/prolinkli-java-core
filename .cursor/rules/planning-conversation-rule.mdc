@@ -1,0 +1,80 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+## Planning Conversation Rule
+
+### When to Apply This Rule
+Trigger this rule when a user request involves:
+- System design and architecture planning
+- Feature planning and initial implementation discussions
+- Database schema design
+- Component relationship mapping
+- Process flow design
+
+### Planning Approach Guidelines
+
+#### 1. High-Level Focus
+- **Conceptual Architecture**: Focus on components, relationships, and data flow
+- **Pseudocode**: Use simple, language-agnostic pseudocode when showing logic
+- **Mermaid Diagrams**: Use diagrams to visualize relationships and flows
+- **Minimal Code**: Avoid detailed implementation code during planning
+
+#### 2. Visualization Preferences
+- **Database Schema**: Use mermaid ER diagrams or simple SQL CREATE statements
+- **System Architecture**: Use mermaid flowcharts, sequence diagrams, or component diagrams
+- **Process Flows**: Use mermaid flowcharts or sequence diagrams
+- **Data Relationships**: Use mermaid ER diagrams
+
+#### 3. Documentation Style
+- **Bullet Points**: Use structured bullet points for requirements and specifications
+- **Tables**: Use markdown tables for comparisons and rule definitions
+- **Checklists**: Use checkbox lists for implementation phases
+- **Diagrams**: Use mermaid for visual representations
+
+#### 4. Code Examples (When Needed)
+- **Interface Signatures**: Show method signatures and key interfaces
+- **Configuration**: Show key configuration patterns
+- **Pseudocode**: Use simple pseudocode for complex logic
+- **Avoid**: Detailed implementation code, long class definitions, complex business logic
+
+### Example Planning Output Structure
+
+```markdown
+## System Design
+
+### Architecture Overview
+[Mermaid diagram showing components]
+
+### Database Schema
+[Mermaid ER diagram or simple CREATE statements]
+
+### Process Flow
+[Mermaid sequence diagram or flowchart]
+
+### Key Components
+- **Component 1**: Brief description and responsibility
+- **Component 2**: Brief description and responsibility
+
+### Pseudocode (if needed)
+```
+function processNotification(request):
+    validate(request)
+    selectProvider(request.channel)
+    send(request)
+    logResult(request, result)
+```
+
+### Implementation Phases
+- [ ] Phase 1: Core setup
+- [ ] Phase 2: Integration
+- [ ] Phase 3: Testing
+```
+
+### Tools to Use
+- **create_diagram**: For mermaid diagrams
+- **edit_file**: For updating documentation
+- **Avoid**: Detailed code implementations during planning
+
+This rule helps maintain focus on architecture and design during planning phases, leaving detailed implementation for later stages.
