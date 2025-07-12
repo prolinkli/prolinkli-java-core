@@ -1,9 +1,9 @@
 -- liquibase formatted sql
 -- changeset kerdogan:FixUserRolesConstraints splitStatements:false
 
--- Fix user_roles table data type and foreign key constraint
--- Change user_id from VARCHAR(50) to BIGINT to match users.id
+-- Fix user_roles table foreign key constraint
 -- Add missing foreign key constraint to users table
+-- Note: user_id is already BIGINT from the initial table creation
 
 -- First, drop any existing foreign key constraints on user_roles.user_id (if any exist)
 DO $$
@@ -17,11 +17,6 @@ BEGIN
         ALTER TABLE public.user_roles DROP CONSTRAINT IF EXISTS user_roles_user_id_fkey;
     END IF;
 END $$;
-
--- Change the data type of user_id from VARCHAR(50) to BIGINT
--- Note: This will fail if there's existing data that can't be converted
--- In that case, you'll need to clean up the data first
-ALTER TABLE public.user_roles ALTER COLUMN user_id TYPE BIGINT USING user_id::BIGINT;
 
 -- Add the missing foreign key constraint
 ALTER TABLE public.user_roles 
