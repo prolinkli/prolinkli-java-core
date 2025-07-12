@@ -1,5 +1,5 @@
 -- liquibase formatted sql
--- changeset permissions:SeedPermissionsData splitStatements:false
+-- changeset cBaxendale:SeedPermissionsData splitStatements:false
 
 -- Insert permission levels with bitwise values
 INSERT INTO permissions_levels_lk (permission_level_lk, level_value, level_name) VALUES

@@ -1,5 +1,5 @@
 -- liquibase formatted sql
--- changeset permissions:CreatePermissionsSystem splitStatements:false
+-- changeset cBaxendale:CreatePermissionsSystem splitStatements:false
 
 -- Permissions lookup table
 select create_table(
