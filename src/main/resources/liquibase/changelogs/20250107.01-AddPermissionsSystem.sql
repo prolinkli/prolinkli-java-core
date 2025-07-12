@@ -2,7 +2,6 @@
 -- changeset cBaxendale:CreatePermissionsSystem splitStatements:false
 
 -- Permissions lookup table
-delete from permissions_lk;
 select create_table(
   table_name => 'permissions_lk',
   columns => 'permission_lk VARCHAR(50) NOT NULL,
@@ -21,7 +20,6 @@ select create_table(
 );
 
 -- Permission levels lookup table
-delete from permissions_levels_lk;
 select create_table(
   table_name => 'permissions_levels_lk',
   columns => 'permission_level_lk VARCHAR(15) NOT NULL,
@@ -39,7 +37,6 @@ select create_table(
 );
 
 -- Permission targets lookup table
-delete from permissions_targets_lk;
 select create_table(
   table_name => 'permissions_targets_lk',
   columns => 'permission_target_lk VARCHAR(50) NOT NULL,
@@ -51,6 +48,24 @@ select create_table(
     "comment": "ALL, SELF, PROFESSIONALS, CONSUMER, etc.",
     "if_not_exists": true,
     "add_timestamps": true
+  }'
+);
+
+-- Roles table
+select create_table(
+  table_name => 'roles',
+  columns => 'role_id VARCHAR(50) NOT NULL,
+              description VARCHAR(50) NOT NULL,
+              short_description VARCHAR(15) NOT NULL,
+              created_at TIMESTAMPTZ DEFAULT NOW(),',
+  options => '{
+    "schema": "public",
+    "add_soft_delete": false,
+    "primary_key": "role_id",
+    "comment": "Role definitions. Unique description and short_description.",
+    "if_not_exists": true,
+    "add_timestamps": false,
+    "unique_constraints": ["description", "short_description"]
   }'
 );
 
@@ -165,24 +180,6 @@ select create_table(
   }'
 );
 
--- Roles table
-select create_table(
-  table_name => 'roles',
-  columns => 'role_id VARCHAR(50) NOT NULL,
-              description VARCHAR(50) NOT NULL,
-              short_description VARCHAR(15) NOT NULL,
-              created_at TIMESTAMPTZ DEFAULT NOW(),',
-  options => '{
-    "schema": "public",
-    "add_soft_delete": false,
-    "primary_key": "role_id",
-    "comment": "Role definitions. Unique description and short_description.",
-    "if_not_exists": true,
-    "add_timestamps": false,
-    "unique_constraints": ["description", "short_description"]
-  }'
-);
-
 -- User roles table
 select create_table(
   table_name => 'user_roles',
@@ -206,4 +203,9 @@ select create_table(
     "if_not_exists": true,
     "add_timestamps": false
   }'
-); 
+);
+
+-- Now safe to delete from tables if needed (optional, only if you want to clear data after creation)
+-- delete from permissions_lk;
+-- delete from permissions_levels_lk;
+-- delete from permissions_targets_lk; 

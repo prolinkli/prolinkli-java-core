@@ -104,12 +104,24 @@
            schema="public"
            domainObjectName="PermissionPossibleLevelLkDb" />
 
-    <table tableName="user_permissions"
+    <table tableName="role_permissions"
            schema="public"
-           domainObjectName="UserPermissionDb">
+           domainObjectName="RolePermissionDb">
       <columnOverride column="created_at" isGeneratedAlways="true" />
       <columnOverride column="updated_at" isGeneratedAlways="true" />
       <columnOverride column="granted_at" isGeneratedAlways="true" />
+    </table>
+
+    <table tableName="roles"
+           schema="public"
+           domainObjectName="RoleDb">
+      <columnOverride column="created_at" isGeneratedAlways="true" />
+    </table>
+
+    <table tableName="user_roles"
+           schema="public"
+           domainObjectName="UserRoleDb">
+      <columnOverride column="created_at" isGeneratedAlways="true" />
     </table>
 
   </context>
