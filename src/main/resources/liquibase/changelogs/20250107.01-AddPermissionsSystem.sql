@@ -2,6 +2,7 @@
 -- changeset cBaxendale:CreatePermissionsSystem splitStatements:false
 
 -- Permissions lookup table
+delete from permissions_lk;
 select create_table(
   table_name => 'permissions_lk',
   columns => 'permission_lk VARCHAR(50) NOT NULL,
@@ -13,13 +14,14 @@ select create_table(
     "schema": "public",
     "add_soft_delete": false,
     "primary_key": "permission_lk",
-    "comment": "Lookup table for permission types",
+    "comment": "Unique permission identifier. Human readable name, flags for targets/levels, description.",
     "if_not_exists": true,
     "add_timestamps": true
   }'
 );
 
 -- Permission levels lookup table
+delete from permissions_levels_lk;
 select create_table(
   table_name => 'permissions_levels_lk',
   columns => 'permission_level_lk VARCHAR(15) NOT NULL,
@@ -29,7 +31,7 @@ select create_table(
     "schema": "public",
     "add_soft_delete": false,
     "primary_key": "permission_level_lk",
-    "comment": "Lookup table for permission levels with bitwise values",
+    "comment": "NONE, READ, EDIT, CREATE, DELETE. Bitwise values.",
     "if_not_exists": true,
     "add_timestamps": true,
     "unique_constraints": ["level_value"]
@@ -37,6 +39,7 @@ select create_table(
 );
 
 -- Permission targets lookup table
+delete from permissions_targets_lk;
 select create_table(
   table_name => 'permissions_targets_lk',
   columns => 'permission_target_lk VARCHAR(50) NOT NULL,
@@ -45,7 +48,7 @@ select create_table(
     "schema": "public",
     "add_soft_delete": false,
     "primary_key": "permission_target_lk",
-    "comment": "Lookup table for permission targets",
+    "comment": "ALL, SELF, PROFESSIONALS, CONSUMER, etc.",
     "if_not_exists": true,
     "add_timestamps": true
   }'
@@ -74,7 +77,7 @@ select create_table(
     "schema": "public",
     "add_soft_delete": false,
     "primary_key": "permission_lk, permission_target_lk",
-    "comment": "Maps which targets are valid for each permission",
+    "comment": "Composite PK. Maps which targets are valid for each permission.",
     "if_not_exists": true,
     "add_timestamps": false
   }'
@@ -103,17 +106,17 @@ select create_table(
     "schema": "public",
     "add_soft_delete": false,
     "primary_key": "permission_lk, permission_level_lk",
-    "comment": "Maps which levels are valid for each permission",
+    "comment": "Composite PK. Maps which levels are valid for each permission.",
     "if_not_exists": true,
     "add_timestamps": false
   }'
 );
 
--- User permissions table
+-- Role permissions table
 select create_table(
-  table_name => 'user_permissions',
-  columns => 'user_permission_id VARCHAR(36) NOT NULL DEFAULT gen_random_uuid(),
-              user_id VARCHAR(50) NOT NULL,
+  table_name => 'role_permissions',
+  columns => 'role_permission_id VARCHAR(36) NOT NULL DEFAULT gen_random_uuid(),
+              role_id VARCHAR(50) NOT NULL,
               permission_lk VARCHAR(50) NOT NULL,
               permission_target_lk VARCHAR(50) NULL,
               permission_level_lk VARCHAR(15) NULL,
@@ -121,8 +124,8 @@ select create_table(
               granted_by VARCHAR(50),',
   foreign_keys => '[
     {
-      "column": "user_id",
-      "references": "users(user_id)",
+      "column": "role_id",
+      "references": "roles(role_id)",
       "if_not_exists": true,
       "on_delete": "CASCADE"
     },
@@ -146,7 +149,7 @@ select create_table(
     },
     {
       "column": "granted_by",
-      "references": "users(user_id)",
+      "references": "roles(role_id)",
       "if_not_exists": true,
       "on_delete": "SET NULL"
     }
@@ -154,10 +157,53 @@ select create_table(
   options => '{
     "schema": "public",
     "add_soft_delete": false,
-    "primary_key": "user_permission_id",
-    "comment": "User-specific permission assignments",
+    "primary_key": "role_permission_id",
+    "comment": "Role-specific permission assignments. Unique index on (role_id, permission_lk, permission_target_lk, permission_level_lk)",
     "if_not_exists": true,
     "add_timestamps": true,
-    "unique_constraints": ["user_id, permission_lk, permission_target_lk, permission_level_lk"]
+    "unique_constraints": ["role_id, permission_lk, permission_target_lk, permission_level_lk"]
+  }'
+);
+
+-- Roles table
+select create_table(
+  table_name => 'roles',
+  columns => 'role_id VARCHAR(50) NOT NULL,
+              description VARCHAR(50) NOT NULL,
+              short_description VARCHAR(15) NOT NULL,
+              created_at TIMESTAMPTZ DEFAULT NOW(),',
+  options => '{
+    "schema": "public",
+    "add_soft_delete": false,
+    "primary_key": "role_id",
+    "comment": "Role definitions. Unique description and short_description.",
+    "if_not_exists": true,
+    "add_timestamps": false,
+    "unique_constraints": ["description", "short_description"]
+  }'
+);
+
+-- User roles table
+select create_table(
+  table_name => 'user_roles',
+  columns => 'role_id VARCHAR(50) NOT NULL,
+              user_id VARCHAR(50) NOT NULL,
+              active_flg BOOLEAN NOT NULL DEFAULT TRUE,
+              created_at TIMESTAMPTZ DEFAULT NOW(),',
+  foreign_keys => '[
+    {
+      "column": "role_id",
+      "references": "roles(role_id)",
+      "if_not_exists": true,
+      "on_delete": "CASCADE"
+    }
+  ]',
+  options => '{
+    "schema": "public",
+    "add_soft_delete": false,
+    "primary_key": "role_id, user_id",
+    "comment": "User to role assignments.",
+    "if_not_exists": true,
+    "add_timestamps": false
   }'
 ); 
