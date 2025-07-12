@@ -184,13 +184,19 @@ select create_table(
 select create_table(
   table_name => 'user_roles',
   columns => 'role_id VARCHAR(50) NOT NULL,
-              user_id VARCHAR(50) NOT NULL,
+              user_id BIGINT NOT NULL,
               active_flg BOOLEAN NOT NULL DEFAULT TRUE,
               created_at TIMESTAMPTZ DEFAULT NOW(),',
   foreign_keys => '[
     {
       "column": "role_id",
       "references": "roles(role_id)",
+      "if_not_exists": true,
+      "on_delete": "CASCADE"
+    },
+    {
+      "column": "user_id",
+      "references": "users(id)",
       "if_not_exists": true,
       "on_delete": "CASCADE"
     }
