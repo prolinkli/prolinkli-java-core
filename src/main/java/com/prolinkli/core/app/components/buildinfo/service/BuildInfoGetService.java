@@ -1,10 +1,8 @@
 package com.prolinkli.core.app.components.buildinfo.service;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 
 import com.prolinkli.core.app.components.buildinfo.model.BuildInfo;
-import com.prolinkli.core.app.db.mapper.generated.BuildInfoDbMapper;
+import com.prolinkli.core.app.components.buildinfo.provider.BuildInfoProvider;
 import com.prolinkli.core.app.db.model.generated.BuildInfoDb;
 import com.prolinkli.core.app.db.model.generated.BuildInfoDbExample;
 import com.prolinkli.core.app.db.model.generated.BuildInfoDbKey;
@@ -22,6 +20,8 @@ import org.springframework.stereotype.Service;
 public class BuildInfoGetService {
 
 	private final Dao<BuildInfoDb, BuildInfoDbKey> dao;
+
+  private final BuildInfoProvider buildInfoProvider = new BuildInfoProvider();
 
 	@Autowired
 	public BuildInfoGetService(
@@ -63,13 +63,7 @@ public class BuildInfoGetService {
 				.findFirst()
 				.orElseThrow(() -> new RuntimeException("No build info found in the database"));
 
-		BuildInfo buildInfo = new BuildInfo();
-		buildInfo.setBuildName(db.getEnvironment());
-		buildInfo.setBuildVersion(db.getVersion());
-		buildInfo.setCommitHash(db.getCommitHash());
-		buildInfo.setBuildDate(LocalDateUtil.toLocalDate(db.getBuildDate()));
-
-		return buildInfo;
+    return buildInfoProvider.map(db);
 	}
 
 }
