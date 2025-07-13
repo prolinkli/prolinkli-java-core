@@ -69,7 +69,7 @@ public class JwtCreateService {
 
     AuthToken jwtTokens = createJwtToken(finalClaims);
     JwtTokenDb jwtTokenDb = authTokenProvider.map(jwtTokens);
-    jwtTokens.setId(user.getId());
+
     jwtTokenDb.setUserId(user.getId());
     jwtTokenDb.setExpiresAt(JwtUtil.getExpirationDate(jwtExpiration));
 
