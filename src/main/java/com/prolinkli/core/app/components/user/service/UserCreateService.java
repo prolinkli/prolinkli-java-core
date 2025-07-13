@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.UserAuthenticationForm;
+import com.prolinkli.core.app.components.user.provider.UserProvider;
 import com.prolinkli.core.app.db.model.generated.UserDb;
 import com.prolinkli.framework.auth.model.AuthProvider;
 import com.prolinkli.framework.db.dao.Dao;
@@ -24,6 +25,8 @@ public class UserCreateService {
   private final List<AuthProvider> authProviders;
 
   private final Dao<UserDb, Long> dao;
+
+  private final UserProvider userProvider = new UserProvider();
 
   @Autowired
   private UserAuthService userAuthService;

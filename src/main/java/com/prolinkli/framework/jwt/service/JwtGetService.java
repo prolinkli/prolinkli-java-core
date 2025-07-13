@@ -11,7 +11,7 @@ import com.prolinkli.core.app.db.model.generated.JwtTokenDbExample;
 import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
 import com.prolinkli.framework.jwt.model.AuthToken;
-import com.prolinkli.framework.jwt.model.AuthToken.AuthTokenBuilder;
+import com.prolinkli.framework.jwt.provider.AuthTokenProvider;
 
 import org.springframework.stereotype.Service;
 
@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 public class JwtGetService {
 
   private final Dao<JwtTokenDb, Long> dao;
+
+  private final AuthTokenProvider authTokenProvider = new AuthTokenProvider();
 
   public JwtGetService(DaoFactory daoFactory) {
     this.dao = daoFactory.getDao(JwtTokenDb.class, Long.class);
@@ -32,13 +34,7 @@ public class JwtGetService {
     JwtTokenDbExample example = new JwtTokenDbExample();
     example.createCriteria().andRefreshTokenEqualTo(refreshToken);
 
-    return dao.select(example).stream().map((i) -> {
-      return new AuthTokenBuilder()
-          .accessToken(i.getAccessToken())
-          .refreshToken(i.getRefreshToken())
-          .id(i.getUserId())
-          .build();
-    }).collect(Collectors.toSet());
+    return authTokenProvider.reverseMapAll(dao.select(example)).stream().collect(Collectors.toSet());
   }
 
   public Set<AuthToken> getJwtToken(Long userId) {
@@ -55,11 +51,8 @@ public class JwtGetService {
       return null; // or throw an exception if preferred
     }
 
-    return jwtTokenDb.stream().map(jwt -> new AuthToken.AuthTokenBuilder()
-        .id(jwt.getUserId())
-        .accessToken(jwt.getAccessToken())
-        .refreshToken(jwt.getRefreshToken())
-        .build()).collect(Collectors.toSet());
+    return authTokenProvider.reverseMapAll(jwtTokenDb).stream()
+        .collect(Collectors.toSet());
   }
 
 }
