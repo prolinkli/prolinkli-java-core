@@ -10,6 +10,7 @@ import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
 import com.prolinkli.framework.jwt.model.AuthToken;
 import com.prolinkli.framework.jwt.model.AuthToken.AuthTokenBuilder;
+import com.prolinkli.framework.jwt.provider.AuthTokenProvider;
 import com.prolinkli.framework.jwt.util.JwtUtil;
 import com.prolinkli.framework.util.map.MapUtil;
 
@@ -33,6 +34,8 @@ public class JwtCreateService {
   private long jwtRefreshExpiration;
 
   private Dao<JwtTokenDb, Long> dao;
+
+  private final AuthTokenProvider authTokenProvider = new AuthTokenProvider();
 
   @Autowired
   public JwtCreateService(DaoFactory daoFactory, SecretsManager secretsManager) {
@@ -65,12 +68,9 @@ public class JwtCreateService {
     Map<String, Object> finalClaims = MapUtil.merge(userClaims, claims);
 
     AuthToken jwtTokens = createJwtToken(finalClaims);
+    JwtTokenDb jwtTokenDb = authTokenProvider.map(jwtTokens);
     jwtTokens.setId(user.getId());
-
-    JwtTokenDb jwtTokenDb = new JwtTokenDb();
     jwtTokenDb.setUserId(user.getId());
-    jwtTokenDb.setAccessToken(jwtTokens.getAccessToken());
-    jwtTokenDb.setRefreshToken(jwtTokens.getRefreshToken());
     jwtTokenDb.setExpiresAt(JwtUtil.getExpirationDate(jwtExpiration));
 
     // Save the JWT token in the database
