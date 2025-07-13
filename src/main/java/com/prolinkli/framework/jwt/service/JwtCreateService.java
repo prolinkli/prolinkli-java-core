@@ -68,9 +68,9 @@ public class JwtCreateService {
     Map<String, Object> finalClaims = MapUtil.merge(userClaims, claims);
 
     AuthToken jwtTokens = createJwtToken(finalClaims);
-    JwtTokenDb jwtTokenDb = authTokenProvider.map(jwtTokens);
+    jwtTokens.setId(user.getId());
 
-    jwtTokenDb.setUserId(user.getId());
+    JwtTokenDb jwtTokenDb = authTokenProvider.map(jwtTokens);
     jwtTokenDb.setExpiresAt(JwtUtil.getExpirationDate(jwtExpiration));
 
     // Save the JWT token in the database
