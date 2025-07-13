@@ -2,10 +2,13 @@ package com.prolinkli.framework.abstractprovider;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
+import com.prolinkli.framework.abstractprovider.convertor.DateToLocalDateConverter;
 
 
 import lombok.AllArgsConstructor;
 import ma.glasnost.orika.MapperFactory;
+import ma.glasnost.orika.converter.ConverterFactory;
+import ma.glasnost.orika.converter.builtin.DateToStringConverter;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import ma.glasnost.orika.metadata.ClassMapBuilder;
 
@@ -22,6 +25,10 @@ public abstract class AbstractProvider<FROM, TO> {
     mapperFactory = new DefaultMapperFactory.Builder()
         .useBuiltinConverters(true)
         .build();
+
+    mapperFactory.getConverterFactory()
+      .registerConverter(new DateToLocalDateConverter());
+
     ClassMapBuilder<FROM, TO> builder = mapperFactory.classMap(fromClass, toClass);
     builder.byDefault();
     ClassProviderBuilder defineMap = new ClassProviderBuilder(builder);
@@ -67,7 +74,7 @@ public abstract class AbstractProvider<FROM, TO> {
     public ClassProviderBuilder field(String fieldA, String fieldB) {
 
       // glass is reversed...
-      classMapBuilder.field(fieldB, fieldA);
+      classMapBuilder.field(fieldA, fieldB);
 
       return this;
     }

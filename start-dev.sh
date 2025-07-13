@@ -16,5 +16,7 @@ fi
 ./mvnw spring-boot:run \
   -Dspring-boot.run.profiles=local-dev \
   -Dspring-boot.run.jvmArguments="-Xmx1024m -Xms512m \
-  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" \
+  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 \
+  --add-opens java.base/java.lang=ALL-UNNAMED \
+  --add-opens java.base/java.lang=com.prolinkli.framework " \
   -Dlogging.level.liquibase=DEBUG
