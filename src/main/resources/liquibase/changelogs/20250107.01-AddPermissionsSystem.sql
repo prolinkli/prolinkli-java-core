@@ -185,8 +185,7 @@ select create_table(
   table_name => 'user_roles',
   columns => 'role_id VARCHAR(50) NOT NULL,
               user_id BIGINT NOT NULL,
-              active_flg BOOLEAN NOT NULL DEFAULT TRUE,
-              created_at TIMESTAMPTZ DEFAULT NOW(),',
+              active_flg BOOLEAN NOT NULL DEFAULT TRUE,',
   foreign_keys => '[
     {
       "column": "role_id",
