@@ -120,9 +120,7 @@
 
     <table tableName="user_roles"
            schema="public"
-           domainObjectName="UserRoleDb">
-      <columnOverride column="created_at" isGeneratedAlways="true" />
-    </table>
+           domainObjectName="UserRoleDb" />
 
   </context>
 </generatorConfiguration>
