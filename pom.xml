@@ -88,6 +88,11 @@
       <artifactId>liquibase-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>ma.glasnost.orika</groupId>
+      <artifactId>orika-core</artifactId>
+      <version>1.5.4</version> <!-- Latest as of July 2025 -->
+    </dependency>
+    <dependency>
       <groupId>org.mybatis.generator</groupId>
       <artifactId>mybatis-generator-core</artifactId>
       <version>1.4.1</version>

@@ -1,12 +1,8 @@
 package com.prolinkli.core.app.components.user.controller;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import com.prolinkli.core.app.Constants.AuthenticationKeys;
-import com.prolinkli.core.app.Constants.Cookies;
 import com.prolinkli.core.app.Constants.LkUserAuthenticationMethods;
 import com.prolinkli.core.app.components.user.model.AuthorizedUser;
 import com.prolinkli.core.app.components.user.model.User;
