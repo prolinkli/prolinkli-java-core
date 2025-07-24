@@ -106,6 +106,25 @@ public final class Constants {
       public static final String CODE_KEY = "code";
       public static final String STATE_KEY = "state";
     }
+
+    /**
+     * Microsoft OAuth2 specific parameter keys.
+     * 
+     * @documentation-pr-rule.mdc
+     * 
+     *                            - CODE_KEY: Authorization code parameter from
+     *                            Microsoft callback
+     *                            - STATE_KEY: CSRF protection state parameter from
+     *                            Microsoft callback
+     * 
+     *                            Used in MicrosoftOAuthService for processing OAuth2
+     *                            callback parameters
+     *                            according to Microsoft's OAuth2 specification.
+     */
+    public static final class Microsoft {
+      public static final String CODE_KEY = "code";
+      public static final String STATE_KEY = "state";
+    }
   }
 
   public static final class Cookies {
@@ -167,6 +186,32 @@ public final class Constants {
      *                            user authentication processing.
      */
     public static final class GOOGLE_OAUTH2 {
+      public static final String CODE = "code";
+      public static final String STATE = "state";
+      public static final String SUBJECT = "sub";
+      public static final String ID_TOKEN = "id_token";
+      public static final String ACCESS_TOKEN = "access_token";
+    }
+
+    /**
+     * Microsoft OAuth2 authentication parameter keys.
+     * 
+     * @documentation-pr-rule.mdc
+     * 
+     *                            Parameter keys used in Microsoft OAuth2
+     *                            authentication flow:
+     *                            - CODE: Authorization code from OAuth2 callback
+     *                            - STATE: CSRF protection state parameter
+     *                            - SUBJECT: Microsoft user ID (sub claim) from composite token
+     *                            - ID_TOKEN: Microsoft composite token containing user
+     *                            profile
+     *                            - ACCESS_TOKEN: Microsoft access token for API calls
+     * 
+     *                            Used by MicrosoftOAuth2Provider for credential
+     *                            validation and
+     *                            user authentication processing.
+     */
+    public static final class MICROSOFT_OAUTH2 {
       public static final String CODE = "code";
       public static final String STATE = "state";
       public static final String SUBJECT = "sub";
