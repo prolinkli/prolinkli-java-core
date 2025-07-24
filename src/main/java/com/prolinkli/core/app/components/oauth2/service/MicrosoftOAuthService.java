@@ -213,10 +213,15 @@ public class MicrosoftOAuthService extends AbstractOAuthService {
     }
     
     JsonNode tokenResponse = objectMapper.readTree(response.body());
+    
+    if (!tokenResponse.has("access_token")) {
+      throw new RuntimeException("Microsoft token response did not contain an access_token field");
+    }
+    
     String accessToken = tokenResponse.get("access_token").asText();
     
     if (accessToken == null || accessToken.isEmpty()) {
-      throw new RuntimeException("Microsoft token response did not contain an access token");
+      throw new RuntimeException("Microsoft token response access_token field is null or empty");
     }
     
     return accessToken;
