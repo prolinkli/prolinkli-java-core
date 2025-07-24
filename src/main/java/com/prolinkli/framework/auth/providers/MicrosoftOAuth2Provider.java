@@ -134,11 +134,10 @@ public class MicrosoftOAuth2Provider implements AuthProvider {
       String systemUsername = OAuthUsernameUtil.generateOAuthUsername(email, microsoftUserId);
 
       // Check if user exists in your system
+      // getUserByOAuthId() throws ResourceNotFoundException if user not found
       User existingUser = microsoftOAuth2Service.getUserByOAuthId(microsoftUserId);
-      if (existingUser == null) {
-        throw new ResourceNotFoundException("User not found with oauthId: " + systemUsername);
-      }
-
+      
+      // If we reach here, user exists and authentication is successful
       return true;
 
     } catch (Exception e) {

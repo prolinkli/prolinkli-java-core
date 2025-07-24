@@ -94,11 +94,20 @@ public class MicrosoftOAuthService extends AbstractOAuthService {
   @Override
   public String getRedirectUrl() {
     final String clientId = secretsManager.getMicrosoftClientId();
-    List<String> scopes = List.of("User.Read", "email", "openid", "profile");
     
-    String scopeString = scopes.stream()
+    // Separate Microsoft Graph API scopes from standard OpenID Connect scopes
+    List<String> graphScopes = List.of("User.Read");
+    List<String> openIdScopes = List.of("email", "openid", "profile");
+    
+    // Build scope string with proper prefixes
+    String graphScopeString = graphScopes.stream()
         .map(scope -> "https://graph.microsoft.com/" + scope)
         .collect(Collectors.joining(" "));
+    
+    String openIdScopeString = String.join(" ", openIdScopes);
+    
+    // Combine scopes with proper formatting
+    String scopeString = (graphScopeString + " " + openIdScopeString).trim();
     
     return String.format("%s?client_id=%s&response_type=code&redirect_uri=%s&scope=%s&response_mode=query",
         MICROSOFT_AUTH_URL,
