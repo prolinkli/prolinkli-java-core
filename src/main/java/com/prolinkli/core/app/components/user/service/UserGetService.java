@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import com.prolinkli.core.app.Constants;
 import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserPassword;
+import com.prolinkli.core.app.components.user.provider.UserPasswordProvider;
+import com.prolinkli.core.app.components.user.provider.UserProvider;
 import com.prolinkli.core.app.db.model.generated.UserDb;
 import com.prolinkli.core.app.db.model.generated.UserDbExample;
 import com.prolinkli.core.app.db.model.generated.UserPasswordDb;
@@ -20,6 +22,9 @@ public class UserGetService {
 
   private final Dao<UserDb, Long> dao;
   private final Dao<UserPasswordDb, Long> userPasswordDao;
+
+  private final UserProvider userProvider = new UserProvider();
+  private final UserPasswordProvider userPasswordProvider = new UserPasswordProvider();
 
   @Autowired
   public UserGetService(DaoFactory daoFactory) {
@@ -45,11 +50,7 @@ public class UserGetService {
       throw new ResourceNotFoundException("User not found with ID: " + userId);
     }
 
-    User user = new User();
-    user.setId(userDb.getId());
-    user.setUsername(userDb.getUsername());
-
-    return user;
+    return userProvider.map(userDb);
   }
 
   public User getUserByUsername(String username) {
@@ -65,10 +66,7 @@ public class UserGetService {
       throw new ResourceNotFoundException("User not found with username: " + username);
     }
 
-    User user = new User();
-    user.setId(userDb.getId());
-    user.setUsername(userDb.getUsername());
-    return user;
+    return userProvider.map(userDb);
   }
 
   public UserPassword getUserWithPasswordByUsername(String username) {
