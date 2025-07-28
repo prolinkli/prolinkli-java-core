@@ -129,6 +129,36 @@ class UserController {
   }
 
   /**
+   * Login endpoint for Microsoft OAuth2 authentication.
+   * 
+   * @param request Map containing Microsoft composite token.
+   * @param response HttpServletResponse to set cookies.
+   * @return AuthorizedUser object containing user details and auth token.
+   */
+  @PostMapping("/login/microsoft")
+  public AuthorizedUser loginWithMicrosoft(@RequestBody Map<String, String> request, HttpServletResponse response) {
+    String idToken = request.get("idToken");
+    if (idToken == null || idToken.trim().isEmpty()) {
+      throw new IllegalArgumentException("Microsoft ID token is required");
+    }
+
+    // Create authentication form for the service
+    UserAuthenticationForm authForm = new UserAuthenticationForm();
+    authForm.setAuthenticationMethodLk(LkUserAuthenticationMethods.MICROSOFT_OAUTH2);
+    authForm.setSpecialToken(idToken);
+
+    // Authenticate using the existing service
+    AuthorizedUser user = userAuthService.login(authForm);
+
+    // Create cookies with proper path settings
+    cookieSaveService.saveCookies(
+        JwtCookieUtil.createAuthCookies(user.getAuthToken()),
+        response);
+
+    return user;
+  }
+
+  /**
    * Register endpoint for user creation.
    * 
    * @param item     User authentication form containing credentials.
