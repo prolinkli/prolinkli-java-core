@@ -4,7 +4,6 @@ services:
   prolinkli_postgres:
     container_name: prolinkli_core_db
     image: postgres:latest
-    restart: always
     tty: true
     ports:
       - "6543:5432"
