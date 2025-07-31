@@ -122,8 +122,8 @@ public class JwtSaveService {
     }
 
     JwtTokenDbExample example = new JwtTokenDbExample();
-    example.createCriteria().andTokenSecretEqualTo(
-        Arrays.stream(tokens).map(TokenSecret::getTokenSecret).collect(Collectors.joining(",")));
+    example.createCriteria().andTokenSecretIn(
+        Arrays.stream(tokens).map(TokenSecret::getTokenSecret).collect(Collectors.toList()));
 
     dao.delete(example);
 
