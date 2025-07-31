@@ -1,6 +1,7 @@
 package com.prolinkli.framework.jwt.service;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -9,8 +10,10 @@ import com.prolinkli.core.app.db.model.generated.JwtTokenDb;
 import com.prolinkli.core.app.db.model.generated.JwtTokenDbExample;
 import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
+import com.prolinkli.framework.exception.exceptions.model.AuthenticationFailedException;
 import com.prolinkli.framework.jwt.model.AuthToken;
 import com.prolinkli.framework.jwt.model.AuthTokenType;
+import com.prolinkli.framework.jwt.model.TokenSecret;
 
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.slf4j.Logger;
@@ -53,17 +56,30 @@ public class JwtSaveService {
     // Verify the existing token
     if (!jwtVerifyService.verifyToken(authToken.getRefreshToken(), AuthTokenType.REFRESH, response)) {
       // TODO: Handle the case where the token is invalid
-      throw new RuntimeException("Refresh token is invalid or expired");
+      throw new AuthenticationFailedException("Refresh token is invalid or expired");
     }
 
-    disposeTokens(authToken);
+    // Get the secret token for the user
+    var secretToken = jwtVerifyService.extractTokenSecret(authToken.getAccessToken());
+    if (secretToken == null) {
+      throw new AuthenticationFailedException("Access token is invalid or expired");
+    }
+
+    disposeTokens(
+        TokenSecret
+            .builder()
+            .tokenSecret(secretToken)
+            .userId(authorizedUser.getId())
+            .build());
+
     // Create a new token
     AuthorizedUser newUser = jwtCreateService.createJwtTokenForUser(authorizedUser, Map.of());
 
     return newUser;
   }
 
-  public void disposeTokensTransactional(AuthToken... tokens) {
+  @Transactional(readOnly = false)
+  public void disposeTokensTransactional(TokenSecret... tokens) {
     if (tokens == null || tokens.length == 0) {
       throw new IllegalArgumentException("Tokens cannot be null or empty");
     }
@@ -78,19 +94,36 @@ public class JwtSaveService {
 
   }
 
+  @Transactional(readOnly = false)
+  public void disposeTokensTransactional(List<TokenSecret> tokens) {
+
+    if (tokens == null || tokens.isEmpty()) {
+      throw new IllegalArgumentException("Tokens cannot be null or empty");
+    }
+
+    try {
+      disposeTokens(tokens.toArray(new TokenSecret[0]));
+    } catch (PersistenceException e) {
+      // Log the error and rethrow it to trigger a rollback
+      LOGGER.error("Error disposing tokens: {}", e.getMessage(), e);
+      throw e; // This will trigger a rollback due to @Transactional
+    }
+
+  }
+
   /**
    * Disposes of the provided JWT tokens by removing them from the database.
    */
 
   @Transactional(rollbackFor = PersistenceException.class)
-  private void disposeTokens(AuthToken... tokens) {
+  private void disposeTokens(TokenSecret... tokens) {
     if (tokens == null || tokens.length == 0) {
       throw new IllegalArgumentException("Tokens cannot be null or empty");
     }
 
     JwtTokenDbExample example = new JwtTokenDbExample();
-    example.createCriteria().andAccessTokenIn(
-        Arrays.stream(tokens).map(AuthToken::getAccessToken).collect(Collectors.toList()));
+    example.createCriteria().andTokenSecretEqualTo(
+        Arrays.stream(tokens).map(TokenSecret::getTokenSecret).collect(Collectors.joining(",")));
 
     dao.delete(example);
 

@@ -122,6 +122,8 @@ public final class Constants {
     public static final Class<?> USER_ID_CLAIMS_CLASS = Integer.class;
     public static final String USERNAME_CLAIMS_KEY = "username";
     public static final Class<?> USERNAME_CLAIMS_CLASS = String.class;
+    public static final String SECRET_CLAIMS_KEY = "secret";
+    public static final Class<?> SECRET_CLAIMS_CLASS = String.class;
   }
 
   /**
