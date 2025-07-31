@@ -86,7 +86,8 @@ public class JwtVerifyService {
       return null;
     }
 
-    return List.of(authToken.getAccessToken(), authToken.getAccessToken()).stream()
+    return List.of(authToken.getAccessToken(), authToken.getRefreshToken()).stream()
+        .filter(Objects::nonNull) // Ensure null tokens are excluded
         .map(
             o -> TokenSecret.builder()
                 .tokenSecret(extractTokenSecret(o))
