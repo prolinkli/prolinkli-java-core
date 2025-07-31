@@ -8,6 +8,7 @@ import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.db.model.generated.JwtTokenDb;
 import com.prolinkli.framework.db.dao.Dao;
 import com.prolinkli.framework.db.dao.DaoFactory;
+import com.prolinkli.framework.hash.Hasher;
 import com.prolinkli.framework.jwt.model.AuthToken;
 import com.prolinkli.framework.jwt.model.AuthToken.AuthTokenBuilder;
 import com.prolinkli.framework.jwt.provider.AuthTokenProvider;
@@ -59,10 +60,17 @@ public class JwtCreateService {
     // jjwt or similar, signing it with a secret key and including the user details
     // in the claims.
 
+    // This token secret is used to *identify* the token and should be securely stored
+    // It is cross-referenced in the database to validate the token and make sure 
+    // that it can be revoked if needed.
+    String tokenSecret = Hasher.generateRandomHash(); // Generate a random token secret
+
     // TODO: add here as needed
     Map<String, Object> userClaims = Map.of(
         Jwt.USER_ID_CLAIMS_KEY, user.getId(),
-        Jwt.USERNAME_CLAIMS_KEY, user.getUsername());
+        Jwt.USERNAME_CLAIMS_KEY, user.getUsername(),
+        Jwt.SECRET_CLAIMS_KEY, tokenSecret // Include user secret if needed
+    );
 
     // Merge user claims with any additional claims
     Map<String, Object> finalClaims = MapUtil.merge(userClaims, claims);
@@ -72,6 +80,7 @@ public class JwtCreateService {
 
     JwtTokenDb jwtTokenDb = authTokenProvider.map(jwtTokens);
     jwtTokenDb.setExpiresAt(JwtUtil.getExpirationDate(jwtExpiration));
+    jwtTokenDb.setTokenSecret(tokenSecret);
 
     // Save the JWT token in the database
     dao.insert(jwtTokenDb);

@@ -2,6 +2,7 @@ package com.prolinkli.framework.jwt.service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ import com.prolinkli.framework.config.secrets.SecretsManager;
 import com.prolinkli.framework.jwt.model.AuthToken;
 import com.prolinkli.framework.jwt.model.AuthTokenType;
 import com.prolinkli.framework.jwt.model.JWTTokenExpiredException;
+import com.prolinkli.framework.jwt.model.TokenSecret;
 import com.prolinkli.framework.jwt.util.JwtUtil;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -72,9 +74,55 @@ public class JwtVerifyService {
 
     } catch (Exception e) {
       // Log the exception in a real implementation
-      //
+      LOGGER.error("Error verifying JWT token: {}", e);
+
       return false;
     }
+  }
+
+  public List<TokenSecret> extractTokenSecret(AuthToken authToken) {
+    if (authToken == null || authToken.getAccessToken() == null || authToken.getAccessToken().isEmpty()) {
+      LOGGER.debug("Auth token or access token is null or empty");
+      return null;
+    }
+
+    return List.of(authToken.getAccessToken(), authToken.getRefreshToken()).stream()
+        .filter(Objects::nonNull) // Ensure null tokens are excluded
+        .map(
+            o -> TokenSecret.builder()
+                .tokenSecret(extractTokenSecret(o))
+                .userId(extractUserId(o))
+                .build())
+        .toList();
+  }
+
+  /**
+   * Extract token secret from JWT token
+   */
+  public String extractTokenSecret(String token) {
+    if (token == null || token.isEmpty() || !isJwtTokenValid(token)) {
+      LOGGER.debug("JWT token is null or empty or invalid");
+      return null;
+    }
+
+    Jws<Claims> claims = getClaims(token);
+    if (claims == null || claims.getPayload() == null) {
+      LOGGER.debug("JWT token claims are null or empty");
+      return null;
+    }
+    Claims body = claims.getPayload();
+
+    Object secret = body.get(Jwt.SECRET_CLAIMS_KEY);
+    if (secret == null) {
+      LOGGER.debug("JWT token does not contain a valid secret");
+      return null;
+    }
+
+    if (Jwt.SECRET_CLAIMS_CLASS.isInstance(secret)) {
+      return Jwt.SECRET_CLAIMS_CLASS.cast(secret).toString();
+    }
+
+    return null;
   }
 
   /**
@@ -141,18 +189,20 @@ public class JwtVerifyService {
       return false;
     }
 
-    Set<AuthToken> authtokens = jwtGetService.getJwtToken(userId);
-    if (authtokens == null || authtokens.isEmpty()) {
+    String tokenSecret = extractTokenSecret(token);
+    if (tokenSecret == null || tokenSecret.isEmpty()) {
+      LOGGER.debug("JWT token does not contain a valid token secret");
+      return false; // No token secret found in the JWT
+    }
+
+    Set<TokenSecret> tokens = jwtGetService.getSecretTokenByUserId(userId);
+    if (tokens == null || tokens.isEmpty()) {
       LOGGER.debug("No JWT tokens found for user ID: {}", userId);
       return false; // No JWT tokens found for the user
     }
-    if (authtokens.stream().noneMatch(tokenDb -> {
-      if (type == AuthTokenType.REFRESH) {
-        return tokenDb.getRefreshToken() != null && tokenDb.getRefreshToken().equals(token);
-      } else if (type == AuthTokenType.ACCESS) {
-        return tokenDb.getAccessToken() != null && tokenDb.getAccessToken().equals(token);
-      }
-      return false; // If type is not recognized, return false
+
+    if (tokens.stream().noneMatch(tokenDb -> {
+      return Objects.equals(tokenDb.getTokenSecret(), tokenSecret) && Objects.equals(tokenDb.getUserId(), userId); // If type is not recognized, return false
     })) {
       LOGGER.debug("JWT token does not match any stored tokens for user ID: {}", userId);
       return false; // JWT token does not match any stored tokens

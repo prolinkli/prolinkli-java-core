@@ -12,6 +12,7 @@ import com.prolinkli.framework.auth.AuthProviderRegistry;
 import com.prolinkli.framework.exception.exceptions.model.AuthenticationFailedException;
 import com.prolinkli.framework.jwt.service.JwtCreateService;
 import com.prolinkli.framework.jwt.service.JwtSaveService;
+import com.prolinkli.framework.jwt.service.JwtVerifyService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -26,17 +27,20 @@ public class UserAuthService {
   private final UserGetService userGetService;
   private final JwtCreateService jwtCreateService;
   private final JwtSaveService jwtSaveService;
+  private final JwtVerifyService jwtVerifyService;
 
   @Autowired
   UserAuthService(
       AuthProviderRegistry authProviderRegistry,
       UserGetService userGetService,
       JwtCreateService jwtCreateService,
-      JwtSaveService jwtSaveService) {
+      JwtSaveService jwtSaveService,
+      JwtVerifyService jwtVerifyService) {
     this.authProviderRegistry = authProviderRegistry;
     this.userGetService = userGetService;
     this.jwtCreateService = jwtCreateService;
     this.jwtSaveService = jwtSaveService;
+    this.jwtVerifyService = jwtVerifyService;
   }
 
   public AuthorizedUser login(UserAuthenticationForm userAuthForm) {
@@ -75,7 +79,9 @@ public class UserAuthService {
     }
 
     // Invalidate the JWT token or perform any necessary cleanup
-    jwtSaveService.disposeTokensTransactional(user.getAuthToken());
+    jwtSaveService.disposeTokensTransactional(
+        jwtVerifyService.extractTokenSecret(user.getAuthToken())
+    );
     return user;
   }
 
