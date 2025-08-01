@@ -7,6 +7,8 @@ import com.prolinkli.core.app.components.user.model.User;
 import com.prolinkli.core.app.components.user.model.UserPassword;
 import com.prolinkli.core.app.components.user.provider.UserPasswordProvider;
 import com.prolinkli.core.app.components.user.provider.UserProvider;
+import com.prolinkli.core.app.components.user.userdetails.model.UserDetails;
+import com.prolinkli.core.app.components.user.userdetails.service.UserDetailsGetService;
 import com.prolinkli.core.app.db.model.generated.UserDb;
 import com.prolinkli.core.app.db.model.generated.UserDbExample;
 import com.prolinkli.core.app.db.model.generated.UserPasswordDb;
@@ -23,13 +25,19 @@ public class UserGetService {
   private final Dao<UserDb, Long> dao;
   private final Dao<UserPasswordDb, Long> userPasswordDao;
 
+  private final UserDetailsGetService userDetailsGetService;
+
   private final UserProvider userProvider = new UserProvider();
   private final UserPasswordProvider userPasswordProvider = new UserPasswordProvider();
 
   @Autowired
-  public UserGetService(DaoFactory daoFactory) {
+  public UserGetService(
+      DaoFactory daoFactory,
+      UserDetailsGetService userDetailsGetService
+    ) {
     this.dao = daoFactory.getDao(UserDb.class, Long.class);
     this.userPasswordDao = daoFactory.getDao(UserPasswordDb.class, Long.class);
+    this.userDetailsGetService = userDetailsGetService;
   }
 
   public User getUserById(Integer userId) {
@@ -50,7 +58,10 @@ public class UserGetService {
       throw new ResourceNotFoundException("User not found with ID: " + userId);
     }
 
-    return userProvider.map(userDb);
+    var user =  userProvider.map(userDb);
+    populateUser(user);
+
+    return user;
   }
 
   public User getUserByUsername(String username) {
@@ -117,6 +128,19 @@ public class UserGetService {
     userPassword.setPassword(userPasswordDb.getPasswordHash());
 
     return userPassword;
+  }
+
+  private void populateUser(User user) {
+
+    if (user == null) {
+      return;
+    }
+
+    UserDetails userDetails = userDetailsGetService.getUserDetails(user.getId());
+    if (userDetails != null) {
+      user.setUserDetails(userDetails);
+    }
+
   }
 
 }
