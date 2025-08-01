@@ -6,6 +6,8 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 
 public class Hasher {
 
+  private static final int MAX_HASH_LENGTH = 16; // Maximum length for a BCrypt hash (including null terminator)
+
   public static String hashString(String input) throws IllegalStateException {
     if (input == null || input.isEmpty()) {
       throw new IllegalStateException("Input cannot be null or empty");
@@ -16,12 +18,13 @@ public class Hasher {
 
   public static String generateRandomHash() {
     // Generate a random string of 32 characters
-    StringBuilder sb = new StringBuilder(32);
+    StringBuilder sb = new StringBuilder(MAX_HASH_LENGTH);
     SecureRandom secureRandom = new SecureRandom();
-    for (int i = 0; i < 32; i++) {
+    for (int i = 0; i < MAX_HASH_LENGTH; i++) {
       int randomChar = (int) (secureRandom.nextInt() * 26) + 'a'; // Random lowercase letter
       sb.append((char) randomChar);
     }
+    
     return hashString(sb.toString());
   } 
 
