@@ -233,6 +233,18 @@ public class SecretsManager {
         return getRequiredSecret("oauth/google", "GOOGLE_OAUTH_REDIRECT_URI");
     }
 
+    public String getMicrosoftClientId() {
+        return getRequiredSecret("oauth/microsoft", "MICROSOFT_OAUTH_CLIENT_ID");
+    }
+
+    public String getMicrosoftClientSecret() {
+        return getRequiredSecret("oauth/microsoft", "MICROSOFT_OAUTH_CLIENT_SECRET");
+    }
+
+    public String getMicrosoftRedirectUri() {
+        return getRequiredSecret("oauth/microsoft", "MICROSOFT_OAUTH_REDIRECT_URI");
+    }
+
     /**
      * Environment configuration
      */
